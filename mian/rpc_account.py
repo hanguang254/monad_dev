@@ -5,7 +5,11 @@ from dotenv import load_dotenv
 
 def connect_rpc():
     try:
-        w3 = Web3(Web3.HTTPProvider('https://api.securerpc.com/v1'))
+        # 读取rpc变量
+        load_dotenv()
+        rpc = os.getenv("RPC")
+        # 链接rpc
+        w3 = Web3(Web3.HTTPProvider(rpc))
         res = w3.is_connected()
         if res:
             print("链接rpc成功")
