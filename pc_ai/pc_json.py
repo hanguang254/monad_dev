@@ -1,16 +1,18 @@
+import os
 from collections import Counter
 from datetime import datetime
 import requests
-
+from dotenv import load_dotenv
 
 
 # 查询最新数据
 def request_data():
-  url = 'https://api.8828355.com/test?token=67FBE9D81D36A55D&t=jnd28&rows=50&p=json&date=20250211'
-  res =requests.get(url)
-  print(res.json())
-  # 查询数据
-  return res.json()
+    load_dotenv()
+    url = os.getenv("PCAPI")
+    res =requests.get(url)
+    # print(res.json())
+    # 查询数据
+    return res.json()
 
 
 
@@ -44,12 +46,33 @@ def kai_data(data):
             x = "杂六"
         # 将结果添加到列表
         list_data.append([opentime, f"期数：{qishu}", f"开奖：{opencode}",f"和值：{opencode_sum}",x])
-    print("\n".join([str(item) for item in list_data]))
+    # print("\n".join([str(item) for item in list_data]))
+    print(list_data)
     return list_data
 
+def find_first_two_zaliu(data):
+    # 存储符合条件的记录
+    result = []
+
+    # 遍历处理后的数据列表
+    for i in range(len(data) - 1):
+        # 获取前两个数组的最后一个元素（类型）
+        if data[i][-1] == "杂六" and data[i + 1][-1] == "杂六":
+            result.append([data[i], data[i + 1]])
+
+    return result
 
 
 if __name__ == '__main__':
-    res = request_data()
-    # print(res)
-    res_data = kai_data(res)
+    try:
+        res = request_data()
+        # print(res)
+        res_data = kai_data(res)
+        # 查找前两个数组的最后一个元素都是"杂六"的记录
+        result = find_first_two_zaliu(res_data)
+        print("\n".join([str(item) for item in result]))
+        if len(result)>=2:
+            # AI分析
+            pass
+    except Exception as e:
+        print(e)
