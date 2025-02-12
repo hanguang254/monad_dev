@@ -1,6 +1,7 @@
 import os
+import time
 from collections import Counter
-from datetime import datetime
+from datetime import datetime, timedelta
 import requests
 from dotenv import load_dotenv
 
@@ -81,22 +82,41 @@ def find_first_two_zaliu(data):
 
 
 if __name__ == '__main__':
-    try:
-        res = request_data()
-        # print(res)
-        res_data = kai_data(res)
-        print("--------------------------------处理后的数据-------------------------------------------")
-        print("\n".join([str(item) for item in res_data]))
-        print("--------------------------------分割线-------------------------------------------")
-        # 查找前两个数组的最后一个元素都是"杂六"的记录
-        result = find_first_two_zaliu(res_data)
-        print("捕捉数据",result)
-        if len(result)>0:
-            print("--------------------------------出现连续机会-------------------------------------------")
-            print("\n".join([str(item) for item in result]))
-            print("--------------------------------进行AI分析-------------------------------------------")
-            # AI分析
-        else:
-            print("--------------------------------不满足条件等待机会-------------------------------------------")
-    except EOFError as e:
-        print(e)
+    while True:
+        try:
+            # 获取当前时间
+            now = datetime.now()
+            print(f"当前时间: {now.strftime('%Y-%m-%d %H:%M:%S')}")
+
+            # 请求最新数据
+            res = request_data()
+            # 处理数据
+            res_data = kai_data(res)
+            print("--------------------------------处理后的数据-------------------------------------------")
+            print("\n".join([str(item) for item in res_data]))
+            print("--------------------------------分割线-------------------------------------------")
+
+            # 查找前两个数组的最后一个元素都是"杂六"的记录
+            result = find_first_two_zaliu(res_data)
+            print("捕捉数据", result)
+
+            if len(result) > 0:
+                print("--------------------------------出现连续机会-------------------------------------------")
+                print("\n".join([str(item) for item in result]))
+                print("--------------------------------进行AI分析-------------------------------------------")
+                # AI分析
+            else:
+                print("--------------------------------不满足条件等待机会-------------------------------------------")
+
+        except EOFError as e:
+            print(e)
+
+        # 计算下一次执行的时间（当前时间加3分钟）
+        next_run_time = now + timedelta(minutes=3)
+        print(f"下次执行时间: {next_run_time.strftime('%Y-%m-%d %H:%M:%S')}")
+
+        # 计算当前时间和下次执行时间的差值（秒数）
+        time_to_wait = (next_run_time - datetime.now()).total_seconds()
+
+        # 等待直到下次执行时间
+        time.sleep(time_to_wait)
