@@ -8,14 +8,14 @@ from GPTAI import AI_Analysis
 
 
 # 查询最新数据
-def request_data():
+def request_data(rows):
     load_dotenv()
     token = os.getenv("PCAPI")
     # 获取当前时间并格式化为 'yyyy-mm-dd'
     current_time = datetime.now().strftime("%Y-%m-%d")
     # 去掉连字符
     date = current_time.replace("-", "")
-    url = f"https://api.8828355.com/api?token={token}&t=jnd28&rows=100&p=json&date={date}"
+    url = f"https://api.8828355.com/api?token={token}&t=jnd28&rows={rows}&p=json&date={date}"
     # print(url)
     res =requests.get(url)
     # print(res.json())
@@ -72,7 +72,7 @@ def kai_data(data):
         # 将结果添加到列表
         list_data.append([opentime, f"期数：{qishu}", f"开奖：{opencode}", f"和值：{opencode_sum}", x])
 
-    print(f"返回数据：{list_data}")
+    # print(f"返回数据：{list_data}")
     return list_data
 
 def find_first_two_zaliu(data):
@@ -100,7 +100,7 @@ if __name__ == '__main__':
             print(f"当前时间: {now.strftime('%Y-%m-%d %H:%M:%S')}")
 
             # 请求最新数据
-            res = request_data()
+            res = request_data(100)
             # 处理数据
             res_data = kai_data(res)
             print("--------------------------------已处理后的数据-------------------------------------------")
@@ -129,6 +129,7 @@ if __name__ == '__main__':
                     print(
                         "--------------------------------新老数据一样不符合分析条件-------------------------------------------")
             else:
+                print("最新",request_data(1)["data"])
                 print(
                     "--------------------------------未捕捉到数据-------------------------------------------")
             # 更新 old_res，只有在新数据符合条件时才更新
