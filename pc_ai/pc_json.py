@@ -4,12 +4,19 @@ from collections import Counter
 from datetime import datetime, timedelta
 import requests
 from dotenv import load_dotenv
+from GPTAI import AI_Analysis
 
 
 # 查询最新数据
 def request_data():
     load_dotenv()
-    url = os.getenv("PCAPI")
+    token = os.getenv("PCAPI")
+    # 获取当前时间并格式化为 'yyyy-mm-dd'
+    current_time = datetime.now().strftime("%Y-%m-%d")
+    # 去掉连字符
+    date = current_time.replace("-", "")
+    url = f"https://api.8828355.com/api?token={token}&t=jnd28&rows=20&p=json&date={date}"
+    # print(url)
     res =requests.get(url)
     # print(res.json())
     # 查询数据
@@ -21,7 +28,7 @@ def kai_data(data):
     list_data = []
     for i in res:
         qishu = i['drawIssue']
-        opentime = datetime.fromtimestamp(float(i['opentime'])).strftime('%Y-%m-%d %H:%M:%S')
+        opentime = i["opentime"]
         opencode = i['opencode']
 
         # 拆分字符串并转换为整数列表
@@ -82,7 +89,9 @@ def find_first_two_zaliu(data):
 
 
 if __name__ == '__main__':
+    cishu=0
     while True:
+        cishu=+1
         try:
             # 获取当前时间
             now = datetime.now()
@@ -94,7 +103,7 @@ if __name__ == '__main__':
             res_data = kai_data(res)
             print("--------------------------------处理后的数据-------------------------------------------")
             print("\n".join([str(item) for item in res_data]))
-            print("--------------------------------分割线-------------------------------------------")
+            print(f"--------------------------------第{cishu}次获取数据-------------------------------------------")
 
             # 查找前两个数组的最后一个元素都是"杂六"的记录
             result = find_first_two_zaliu(res_data)
@@ -105,6 +114,9 @@ if __name__ == '__main__':
                 print("\n".join([str(item) for item in result]))
                 print("--------------------------------进行AI分析-------------------------------------------")
                 # AI分析
+                send_text=(f'{res_data}这是jnd28最新20期数开奖，请根据个位十位百位号码走势图，利用走势图分析法预测下一期开杂六的概率有多大（杂六为三位数字都不同也不是顺数）'
+                           f'并且结合和值开奖走势分析，综合评断下期杂六的概率有多大')
+                AI_Analysis(send_text)
             else:
                 print("--------------------------------不满足条件等待机会-------------------------------------------")
 
@@ -114,6 +126,7 @@ if __name__ == '__main__':
         # 计算下一次执行的时间（当前时间加3分钟）
         next_run_time = now + timedelta(minutes=3)
         print(f"下次执行时间: {next_run_time.strftime('%Y-%m-%d %H:%M:%S')}")
+        print(f"--------------------------------第{cishu}次执行-------------------------------------------")
 
         # 计算当前时间和下次执行时间的差值（秒数）
         time_to_wait = (next_run_time - datetime.now()).total_seconds()

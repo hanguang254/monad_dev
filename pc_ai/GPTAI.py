@@ -5,7 +5,7 @@ client = OpenAI()
 
 
 
-def AI_Analysis():
+def AI_Analysis(text):
     completion = client.chat.completions.create(
         model="gpt-4o-mini",
         messages=[
@@ -17,10 +17,14 @@ def AI_Analysis():
             # 输入参数内容
             {
                 "role": "user",
-                "content": "你好！"
+                "content": f"{text}"
             }
         ]
     )
 
 
     print(completion.choices[0].message)
+
+if __name__ == '__main__':
+    text=""
+    AI_Analysis(text)
