@@ -91,7 +91,7 @@ def find_first_two_zaliu(data):
 if __name__ == '__main__':
     cishu=0
     while True:
-        cishu=+1
+        cishu=cishu+1
         try:
             # 获取当前时间
             now = datetime.now()
@@ -114,7 +114,8 @@ if __name__ == '__main__':
                 print("\n".join([str(item) for item in result]))
                 print("--------------------------------进行AI分析-------------------------------------------")
                 # AI分析
-                send_text=(f'{res_data}这是jnd28最新20期数开奖，请根据个位十位百位号码走势图，利用走势图分析法预测下一期开杂六的概率有多大（杂六为三位数字都不同也不是顺数）'
+                send_text=(f'{res_data}这是jnd28最新20期数开奖，'
+                           f'请根据个位十位百位号码走势图，利用走势图分析法预测下一期开杂六的概率有多大（杂六为三位数字都不同也不是顺数）'
                            f'并且结合和值开奖走势分析，综合评断下期杂六的概率有多大')
                 AI_Analysis(send_text)
             else:
@@ -124,7 +125,7 @@ if __name__ == '__main__':
             print(e)
 
         # 计算下一次执行的时间（当前时间加3分钟）
-        next_run_time = now + timedelta(minutes=3)
+        next_run_time = now + timedelta(minutes=2)
         print(f"下次执行时间: {next_run_time.strftime('%Y-%m-%d %H:%M:%S')}")
         print(f"--------------------------------第{cishu}次执行-------------------------------------------")
 
