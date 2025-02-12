@@ -89,9 +89,11 @@ def find_first_two_zaliu(data):
 
 
 if __name__ == '__main__':
-    cishu=0
+    cishu = 0
+    old_res = []
+
     while True:
-        cishu=cishu+1
+        cishu += 1
         try:
             # 获取当前时间
             now = datetime.now()
@@ -106,26 +108,32 @@ if __name__ == '__main__':
             print(f"--------------------------------第{cishu}次获取数据-------------------------------------------")
 
             # 查找前两个数组的最后一个元素都是"杂六"的记录
-            result = find_first_two_zaliu(res_data)
-            print("捕捉数据", result)
+            new_res = find_first_two_zaliu(res_data)
+            print("捕捉数据", new_res)
 
-            if len(result) > 0:
-                print("--------------------------------出现连续机会-------------------------------------------")
-                print("\n".join([str(item) for item in result]))
-                print("--------------------------------进行AI分析-------------------------------------------")
-                # AI分析
-                send_text=(f'{res_data}这是jnd28最新20期数开奖，'
-                           f'请根据个位十位百位号码走势图，利用走势图分析法预测下一期开杂六的概率有多大（杂六为三位数字都不同也不是顺数）'
-                           f'并且结合和值开奖走势分析，综合评断下期杂六的概率有多大')
-                AI_Analysis(send_text)
-            else:
-                print("--------------------------------不满足条件等待机会-------------------------------------------")
+            # 如果发现连续相同的"杂六"机会
+            if len(new_res) > 0:
+                if new_res == old_res:
+                    print("--------------------------------出现连续机会-------------------------------------------")
+                    print("\n".join([str(item) for item in new_res]))
+                    print("--------------------------------进行AI分析-------------------------------------------")
+                    # AI分析
+                    send_text = (f'{res_data}这是jnd28最新20期数开奖，'
+                                 f'请根据个位十位百位号码走势图，利用走势图分析法预测下一期开杂六的概率有多大（杂六为三位数字都不同也不是顺数）'
+                                 f'并且结合和值开奖走势分析，综合评断下期杂六的概率有多大')
+                    AI_Analysis(send_text)
+                else:
+                    print(
+                        "--------------------------------不满足条件等待机会-------------------------------------------")
+
+            # 更新 old_res，只有在新数据符合条件时才更新
+            old_res = new_res
 
         except EOFError as e:
             print(e)
 
-        # 计算下一次执行的时间（当前时间加3分钟）
-        next_run_time = now + timedelta(minutes=2)
+        # 计算下一次执行的时间（当前时间加1分钟）
+        next_run_time = now + timedelta(minutes=1)
         print(f"下次执行时间: {next_run_time.strftime('%Y-%m-%d %H:%M:%S')}")
         print(f"--------------------------------第{cishu}次执行-------------------------------------------")
 
