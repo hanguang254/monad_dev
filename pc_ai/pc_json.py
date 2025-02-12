@@ -98,5 +98,5 @@ if __name__ == '__main__':
             # AI分析
         else:
             print("--------------------------------不满足条件等待机会-------------------------------------------")
-    except Exception as e:
+    except EOFError as e:
         print(e)
