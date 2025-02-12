@@ -7,7 +7,7 @@ client = OpenAI()
 
 def AI_Analysis(text):
     completion = client.chat.completions.create(
-        model="gpt-4o-mini",
+        model="gpt-4o",
         messages=[
             # system设定角色，知识范围英文最佳
             {
