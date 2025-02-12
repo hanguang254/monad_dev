@@ -12,7 +12,7 @@ def AI_Analysis(text):
             # system设定角色，知识范围英文最佳
             {
                 "role": "system",
-                "content": "You are a senior lottery analyst, mastering many lottery analysis methods such as trend analysis, and you are a great probabilist with rich knowledge of probability."
+                "content": "你是一个资深的彩票分析师，掌握着诸多彩票分析方法，如走势图分析法，折线图走势分析法，非常熟悉加拿大28"
             },
             # 输入参数内容
             {
