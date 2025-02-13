@@ -7,27 +7,40 @@ def AI_image():
     # 设置中文字体（Windows: SimHei, Mac: Songti SC, Linux 需安装字体）
     plt.rcParams['font.sans-serif'] = ['SimHei']  # SimHei 是 Windows 自带的黑体
     plt.rcParams['axes.unicode_minus'] = False  # 解决负号显示问题
-    # 数据
-    data = [10, 20, 4, 17, 18, 13]
-    x_labels = range(1, len(data) + 1)
+
+    # 三组数据
+    data1 = [10, 20, 4, 17, 18, 13]  # 第一组数据
+    data2 = [15, 25, 10, 22, 16, 19]  # 第二组数据
+    data3 = [5, 12, 8, 14, 20, 15]  # 第三组数据
+    data4= [4,9,2,10,23,24]
+    x_labels = range(1, len(data1) + 1)  # X 轴索引（1, 2, 3, ...）
 
     # 创建折线图
-    plt.figure(figsize=(6, 4))
-    plt.plot(x_labels, data, marker='o', linestyle='-', color='b', label="数据趋势")
+    plt.figure(figsize=(8, 5))
 
-    # 添加数据标签（在每个点上显示数值）
-    for i, txt in enumerate(data):
-        plt.text(x_labels[i], data[i], str(txt), ha='right', va='bottom', fontsize=10, color='black')
+    # 绘制三条折线
+    plt.plot(x_labels, data1, marker='o', linestyle='-', color='b', label="数据组 1")
+    plt.plot(x_labels, data2, marker='o', linestyle='--', color='r', label="数据组 2")
+    plt.plot(x_labels, data3, marker='o', linestyle='-.', color='g', label="数据组 3")
+    plt.plot(x_labels, data4, marker='o', linestyle='-.', color='k', label="数据组 4")
+
+    # 在每个数据点上显示数值
+    for i in range(len(data1)):
+        plt.text(x_labels[i], data1[i], str(data1[i]), ha='right', va='bottom', fontsize=10, color='blue')
+        plt.text(x_labels[i], data2[i], str(data2[i]), ha='center', va='bottom', fontsize=10, color='red')
+        plt.text(x_labels[i], data3[i], str(data3[i]), ha='right', va='bottom', fontsize=10, color='green')
+        plt.text(x_labels[i], data4[i], str(data4[i]), ha='right', va='top', fontsize=15, color='k')
 
     # 添加标题和标签
-    plt.title("数据趋势折线图")
+    plt.title("三组数据趋势折线图")
     plt.xlabel("索引")
     plt.ylabel("值")
-    plt.legend()
+    plt.legend()  # 显示图例
 
     # 保存图片
-    image_path = "trend_chart.png"
+    image_path = "multi_trend_chart.png"
     plt.savefig(image_path)
+    plt.show()
 
     print(f"图片已保存: {image_path}")
 
