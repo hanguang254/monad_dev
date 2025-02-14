@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 import requests
 from dotenv import load_dotenv
 from GPTAI import AI_Analysis
+import matplotlib.pyplot as plt
 
 
 # 查询最新数据
@@ -21,6 +22,124 @@ def request_data(rows):
     # print(res.json())
     # 查询数据
     return res.json()
+
+def create_image():
+    '''
+
+    :return: 折线图方法
+    '''
+    # 设置中文字体（Windows: SimHei, Mac: Songti SC, Linux 需安装字体）
+    plt.rcParams['font.sans-serif'] = ['SimHei']  # SimHei 是 Windows 自带的黑体
+    plt.rcParams['axes.unicode_minus'] = False  # 解决负号显示问题
+
+    # 获取期数个位十位百位
+    issue, units, tens, hundreds, sums = image_data()
+
+    # 三组数据
+    data1 = units  # 第一组数据
+    data2 = tens  # 第二组数据
+    data3 = hundreds  # 第三组数据
+    data4 = sums
+    x_labels = issue
+
+    # 创建折线图
+    plt.figure(figsize=(10, 5))
+
+    # 绘制三条折线
+    plt.plot(x_labels, data1, marker='o', linestyle='-', color='b', label="个位")
+    plt.plot(x_labels, data2, marker='o', linestyle='--', color='r', label="十位")
+    plt.plot(x_labels, data3, marker='o', linestyle='-.', color='g', label="百位")
+    plt.plot(x_labels, data4, marker='o', linestyle='-.', color='k', label="和值")
+
+    # 在每个数据点上显示数值
+    for i in range(len(data1)):
+        plt.text(x_labels[i], data1[i], str(data1[i]), ha='right', va='bottom', fontsize=10, color='blue')
+        plt.text(x_labels[i], data2[i], str(data2[i]), ha='center', va='bottom', fontsize=10, color='red')
+        plt.text(x_labels[i], data3[i], str(data3[i]), ha='right', va='bottom', fontsize=10, color='green')
+        plt.text(x_labels[i], data4[i], str(data4[i]), ha='right', va='top', fontsize=15, color='k')
+
+    # 限制 X 轴标签的显示间隔
+    plt.xticks(x_labels[::3])  # 每隔两个显示一个标签（你可以调整间隔数字）
+
+    # 添加标题和标签
+    plt.title("最新的30期走势图")
+    plt.xlabel("期数")
+    plt.ylabel("值")
+    plt.legend()  # 显示图例
+
+    # 保存图片
+    image_path = "image.png"
+    plt.savefig(image_path)
+    # plt.show()
+
+    print(f"图片已保存: {image_path}")
+    # 文字描述部分
+    description = generate_description(x_labels, data1, data2, data3, data4)
+    print(description)
+    return description
+
+
+def generate_description(x_labels, data1, data2, data3, data4):
+    '''生成图表的文字描述'''
+    description = "图表描述：\n"
+    description += "本图展示了最新30期的数据趋势，分别为个位、十位、百位和和值四组数据。（从左往右读）\n"
+
+    # 描述各组数据的走势
+    description += "1. 个位数据趋势：\n"
+    description += f"   {data1}，从期数 {x_labels[0]} 到 {x_labels[-1]}，出现了{get_trend(data1)}的变化。\n"
+
+    description += "2. 十位数据趋势：\n"
+    description += f"   {data2}，十位数据从期数 {x_labels[0]} 到 {x_labels[-1]}，表现出{get_trend(data2)}的趋势。\n"
+
+    description += "3. 百位数据趋势：\n"
+    description += f"   {data3}，百位数据在这30期内，展示了{get_trend(data3)}的变化。\n"
+
+    description += "4. 和值数据趋势：\n"
+    description += f"   {data4}，和值数据呈现出{get_trend(data4)}的走势。\n"
+
+    return description
+
+
+def get_trend(data):
+    '''分析数据的趋势（升、降、波动）'''
+    if data[0] < data[-1]:
+        return "上升"
+    elif data[0] > data[-1]:
+        return "下降"
+    else:
+        return "波动"
+
+def image_data():
+    res = request_data(30)
+    # print(res)
+    data = res["data"]
+    Issue=[]
+    Units=[]
+    Tens=[]
+    Hundreds=[]
+    Sums =[]
+    for i in data:
+        qishu = i['drawIssue']
+        # 拆分字符串并转换为整数列表
+        opencode_list = list(map(int, i['opencode'].split(',')))
+        # 计算和值
+        opencode_sum = sum(opencode_list)
+        unit = list(map(int, i['opencode'].split(',')))[2]
+        ten = list(map(int, i['opencode'].split(',')))[1]
+        hund =list(map(int, i['opencode'].split(',')))[0]
+        # print(unit)
+        Issue.append(qishu)
+        Units.append(unit)
+        Tens.append(ten)
+        Hundreds.append(hund)
+        Sums.append(opencode_sum)
+    Issue.reverse()
+    Units.reverse()
+    Tens.reverse()
+    Hundreds.reverse()
+    Sums.reverse()
+    # print(Issue,Units,Tens,Hundreds,hezhi)
+    return Issue, Units, Tens, Hundreds, Sums
 
 
 def kai_data(data):
@@ -87,8 +206,7 @@ def find_first_two_zaliu(data):
     return result
 
 
-
-if __name__ == '__main__':
+def main():
     cishu = 0
     old_res = []
 
@@ -100,7 +218,7 @@ if __name__ == '__main__':
             print(f"当前时间: {now.strftime('%Y-%m-%d %H:%M:%S')}")
 
             # 请求最新数据
-            res = request_data(100)
+            res = request_data(50)
             # 处理数据
             res_data = kai_data(res)
             print("--------------------------------已处理后的数据-------------------------------------------")
@@ -120,16 +238,18 @@ if __name__ == '__main__':
                     print("--------------------------------出现连续机会-------------------------------------------")
                     print("\n".join([str(item) for item in new_res]))
                     print("--------------------------------进行AI分析-------------------------------------------")
+                    # 生成走势图
+                    description = create_image()
                     # AI分析
-                    send_text = (f'{res_data}这是jnd28最新100期数开奖，'
-                                 f'请根据个位十位百位号码，绘制每位数字与和值的折线图，并根据折线图分析，'
-                                 f'给出预测杂六与和值是大是小的概率百分比！并且用中文回答')
+                    send_text = (f'{res_data}这是jnd28最新50期数开奖，规则（每位数的范围是0到9，杂六就是三位数字不一样，且不是顺子，和值大于13就是大小于14就是小）'
+                                 f'这是最新20期的折现走势图的文字描述【{description}】冷静理想的分析预测下一期'
+                                 f'给出预测杂六与与和值是大是小的概率百分比！并且用中文回答')
                     AI_Analysis(send_text)
                 else:
                     print(
                         "--------------------------------新老数据一样不符合分析条件-------------------------------------------")
             else:
-                print("最新",request_data(1)["data"])
+                print("最新", request_data(1)["data"])
                 print(
                     "--------------------------------未捕捉到数据-------------------------------------------")
             # 更新 old_res，只有在新数据符合条件时才更新
@@ -148,3 +268,8 @@ if __name__ == '__main__':
 
         # 等待直到下次执行时间
         time.sleep(time_to_wait)
+
+if __name__ == '__main__':
+    main()
+    # create_image()
+    # image_data()
