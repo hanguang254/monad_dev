@@ -2,11 +2,16 @@ import os
 import time
 from collections import Counter
 from datetime import datetime, timedelta
+from email import encoders
+from email.mime.base import MIMEBase
+
 import requests
 from dotenv import load_dotenv
 from GPTAI import AI_Analysis
 import matplotlib.pyplot as plt
-
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 
 # 查询最新数据
 def request_data(rows):
@@ -73,41 +78,9 @@ def create_image():
     # plt.show()
 
     print(f"图片已保存: {image_path}")
-    # 文字描述部分
-    description = generate_description(x_labels, data1, data2, data3, data4)
-    print(description)
-    return description
 
 
-def generate_description(x_labels, data1, data2, data3, data4):
-    '''生成图表的文字描述'''
-    description = "图表描述：\n"
-    description += "本图展示了最新30期的数据趋势，分别为个位、十位、百位和和值四组数据。（从左往右读）\n"
 
-    # 描述各组数据的走势
-    description += "1. 个位数据趋势：\n"
-    description += f"   {data1}，从期数 {x_labels[0]} 到 {x_labels[-1]}，出现了{get_trend(data1)}的变化。\n"
-
-    description += "2. 十位数据趋势：\n"
-    description += f"   {data2}，十位数据从期数 {x_labels[0]} 到 {x_labels[-1]}，表现出{get_trend(data2)}的趋势。\n"
-
-    description += "3. 百位数据趋势：\n"
-    description += f"   {data3}，百位数据在这30期内，展示了{get_trend(data3)}的变化。\n"
-
-    description += "4. 和值数据趋势：\n"
-    description += f"   {data4}，和值数据呈现出{get_trend(data4)}的走势。\n"
-
-    return description
-
-
-def get_trend(data):
-    '''分析数据的趋势（升、降、波动）'''
-    if data[0] < data[-1]:
-        return "上升"
-    elif data[0] > data[-1]:
-        return "下降"
-    else:
-        return "波动"
 
 def image_data():
     res = request_data(30)
@@ -141,6 +114,55 @@ def image_data():
     # print(Issue,Units,Tens,Hundreds,hezhi)
     return Issue, Units, Tens, Hundreds, Sums
 
+
+def send_email_smtp(email, content, attachment_path):
+    load_dotenv()
+    account = os.getenv("ACCOUNT")
+    password = os.getenv("PASSWORD")
+
+    sender_email = f"{account}"
+    receiver_email = f"{email}"
+    password = f"{password}"
+
+    # 创建邮件对象
+    message = MIMEMultipart()
+    message["From"] = sender_email
+    message["To"] = receiver_email
+    message["Subject"] = "监控警报"
+
+    # 邮件正文
+    body = f"{content}"
+    message.attach(MIMEText(body, "plain"))
+
+    # 添加附件
+    if attachment_path:
+        try:
+            # 打开附件文件
+            with open(attachment_path, "rb") as attachment_file:
+                part = MIMEBase("application", "octet-stream")
+                part.set_payload(attachment_file.read())
+                encoders.encode_base64(part)
+                part.add_header(
+                    "Content-Disposition",
+                    f"attachment; filename={os.path.basename(attachment_path)}"
+                )
+                message.attach(part)
+        except Exception as e:
+            print(f"附件添加失败: {e}")
+            return
+
+    try:
+        # 连接到 SMTP 服务器（使用 SSL 端口 465）
+        server = smtplib.SMTP_SSL("smtp.163.com", 465)  # 使用 SSL
+        server.set_debuglevel(0)  # 禁用调试输出
+
+        server.login(sender_email, password)
+
+        # 发送邮件
+        server.sendmail(sender_email, receiver_email, message.as_string())
+        print("Email sent successfully!")
+    except Exception as e:
+        print(f"错误：{e}")
 
 def kai_data(data):
     res = data['data']
@@ -198,7 +220,8 @@ def find_first_two_zaliu(data):
     # 存储符合条件的记录
     result = []
     # 检查前两个元素的最后一个类型是否都是 "杂六"
-    if len(data) > 1 and data[0][-1] == "杂六" and data[1][-1] == "杂六":
+    # and data[1][-1] == "杂六"
+    if len(data) > 1 and data[0][-1] == "杂六" :
         result.append(data[0])
         result.append(data[1])
 
@@ -218,7 +241,7 @@ def main():
             print(f"当前时间: {now.strftime('%Y-%m-%d %H:%M:%S')}")
 
             # 请求最新数据
-            res = request_data(50)
+            res = request_data(100)
             # 处理数据
             res_data = kai_data(res)
             print("--------------------------------已处理后的数据-------------------------------------------")
@@ -239,17 +262,22 @@ def main():
                     print("\n".join([str(item) for item in new_res]))
                     print("--------------------------------进行AI分析-------------------------------------------")
                     # 生成走势图
-                    description = create_image()
+                    create_image()
                     # AI分析
-                    send_text = (f'{res_data}这是jnd28最新50期数开奖，规则（每位数的范围是0到9，杂六就是三位数字不一样，且不是顺子，和值大于13就是大小于14就是小）'
-                                 f'这是最新20期的折现走势图的文字描述【{description}】冷静理想的分析预测下一期'
-                                 f'给出预测杂六与与和值是大是小的概率百分比！并且用中文回答')
-                    AI_Analysis(send_text)
+                    send_text = (f'{res_data}这是jnd28最新100期数开奖，规则（每位数的范围是0到9，杂六就是三位数字不一样，且不是顺子，和值大于13就是大小于14就是小）'
+                                 f'你也可以自己根据个位十位百位，和值绘制折线走势图来分析'
+                                 f'你要做出预测并不是根据我给你的数据来统计概率请你独立分析思考'
+                                 f'给出预测杂六与与和值是大是小还有是单数还是双数的概率百分比！最好把杂六、大和小、单和双的概率都列出来，如果你有大把握确定下期预测结果请特别列出来。并且用中文回答')
+                    AI_res = AI_Analysis(send_text)
+                    # 发送邮件提醒
+                    send_email_smtp("725204548@qq.com",AI_res,"image.png")
                 else:
                     print(
                         "--------------------------------新老数据一样不符合分析条件-------------------------------------------")
             else:
                 print("最新", request_data(1)["data"])
+                # 生成走势图
+                description = create_image()
                 print(
                     "--------------------------------未捕捉到数据-------------------------------------------")
             # 更新 old_res，只有在新数据符合条件时才更新
@@ -271,5 +299,4 @@ def main():
 
 if __name__ == '__main__':
     main()
-    # create_image()
-    # image_data()
+    # send_email_smtp("725204548@qq.com","test")

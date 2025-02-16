@@ -23,6 +23,7 @@ def AI_Analysis(text):
     )
 
     print(completion.choices[0].message.content)
+    return completion.choices[0].message.content
 
 if __name__ == '__main__':
     text="我把本地图片转化位base64编码给你 你能查看图片内容吗？"
