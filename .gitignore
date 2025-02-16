@@ -5,3 +5,4 @@
 # .gitignore
 .env
 key.csv
+mnemonics.csv

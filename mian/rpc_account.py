@@ -1,3 +1,4 @@
+import csv
 
 from web3 import Web3
 import os
@@ -37,11 +38,30 @@ class RpcConnect():
         """
         try:
             account = web3.eth.account.from_key(key)
-            print(f"地址：{account.address}")
+            # print(f"地址：{account.address}")
+            return account
         except Exception as e:
             print(e)
+
+    def read_key(self,csv_path,column_name):
+        keys = []
+        # 打开 CSV 文件
+        with open(csv_path, 'r', newline='', encoding='utf-8') as file:
+            # 创建 CSV 阅读器
+            reader = csv.DictReader(file)
+            # 读取 'key' 列的所有数据
+            for row in reader:
+                key_value = row.get(column_name)  # 使用 .get() 来安全获取值
+                if key_value:  # 仅当 key 有值时才添加
+                    keys.append(key_value)
+                else:
+                    print(f"警告: 找到一个空值或缺失的 'key' 数据：{row}")
+        return keys
+
 
 if __name__ == '__main__':
     load_dotenv()
     key = os.getenv("KEY")
     print("私钥：",key)
+    pass
+    RpcConnect().create_account()
