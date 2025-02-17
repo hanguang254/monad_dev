@@ -1,10 +1,7 @@
-
 import os
-
 import requests
 from dotenv import load_dotenv
 from eth_account.messages import encode_defunct
-
 from rpc_account import RpcConnect
 
 
@@ -76,7 +73,7 @@ def claim():
     login_headers = {
         "accept-encoding": "gzip, deflate, br, zstd",
         "accept-language": "zh-CN,zh;q=0.9",
-        "authorization": "Bearer null",
+        "user-agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36",
         "content-type": "application/json"
     }
     uid_url = "https://legends.saharalabs.ai/api/v1/user/challenge"
@@ -88,7 +85,7 @@ def claim():
     # print(uid_res.json())
     uid = uid_res.json()['challenge']
     # 消息签名
-    msg = (f"Sign in to Sahara! Challenge:{uid}")
+    msg = (f"Sign in to Sahara!\nChallenge:{uid}")
     print(msg)
     message = encode_defunct(text=msg)
     signed_message = web3.eth.account.sign_message(message, private_key=key)
@@ -113,23 +110,21 @@ def claim():
     print(login_res.json())
 
 
-    # token = ("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJ3YWxsZXQiLCJzdWIiOiIweDMyYjVkYjc4OTU0NDUxODk3YTNjMD"
-    #          "g5YTViMGNlNTUzZGUwYTQ1OTciLCJhdWQiOlsiYWNjZXNzIl0sImV4cCI6MTczOTc0MTI0OSwianRpIjoiZDd0dzYybjEyNm"
-    #          "F4WkNhTS0yMDQ3ODgwIn0.4LkfIoVcclB-9ZXoiylc8Jde3nsBpruu1PzXLYfNu88")
-    #
-    # url = "https://legends.saharalabs.ai/api/v1/task/claim"
-    # headers = {
-    #     "accept-encoding":"gzip, deflate, br, zstd",
-    #     "accept-language":"zh-CN,zh;q=0.9",
-    #     "authorization": f"Bearer {token}"
-    # }
-    # data = {
-    #      "taskID":"1004"
-    #  }
-    # res = requests.post(url=url,headers=headers,json=data)
-    # print(res.json())
+    token = login_res.json()['accessToken']
+
+    url = "https://legends.saharalabs.ai/api/v1/task/claim"
+    headers = {
+        "accept-encoding":"gzip, deflate, br, zstd",
+        "accept-language":"zh-CN,zh;q=0.9",
+        "authorization": f"Bearer {token}"
+    }
+    data = {
+         "taskID":"1004"
+     }
+    res = requests.post(url=url,headers=headers,json=data)
+    print(res.json())
 
 
 if __name__ == '__main__':
-    transfer_test()
-    # claim()
+    # transfer_test()
+    claim()
