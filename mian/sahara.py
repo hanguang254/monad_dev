@@ -1,4 +1,6 @@
 import os
+from time import sleep
+
 import requests
 from dotenv import load_dotenv
 from eth_account.messages import encode_defunct
@@ -54,15 +56,17 @@ def transfer_test():
         tx_receipt = web3.eth.wait_for_transaction_receipt(tx_hash)
         if tx_receipt["status"] == 1:
             print("发送交易成功")
+            sleep(2)
+            claim(i)
         else:
             print(tx_receipt)
 
 
-def claim():
+def claim(key):
     # 获取本地环境参数
 
-    load_dotenv()
-    key = os.getenv("KEY")
+    # load_dotenv()
+    # key = os.getenv("KEY")
     # print("私钥：", key)
 
     rpc_url = "https://testnet.saharalabs.ai"
@@ -86,13 +90,13 @@ def claim():
     uid = uid_res.json()['challenge']
     # 消息签名
     msg = (f"Sign in to Sahara!\nChallenge:{uid}")
-    print(msg)
+    print("消息签名")
     message = encode_defunct(text=msg)
     signed_message = web3.eth.account.sign_message(message, private_key=key)
-    print(signed_message.signature.hex())
+    # print(signed_message.signature.hex())
 
     a = web3.eth.account.recover_message(message, signature=signed_message.signature)
-    print(a)
+    print("本地验证签名")
 
 
     login_url = "https://legends.saharalabs.ai/api/v1/login/wallet"
@@ -104,27 +108,37 @@ def claim():
         # "walletName":"MetaMask",
         # "walletUUID":"87a503ae-d129-464a-8237-f05b3afe1f1b"
     }
-    print(login_data)
+    # print(login_data)
     login_res = requests.post(url=login_url,headers=login_headers,json=login_data)
 
-    print(login_res.json())
+    print("刷新任务")
 
 
     token = login_res.json()['accessToken']
+    # 刷新任务
+    fresh_url = "https://legends.saharalabs.ai/api/v1/task/flush"
 
-    url = "https://legends.saharalabs.ai/api/v1/task/claim"
+    data = {
+        "taskID": "1004"
+    }
+
     headers = {
-        "accept-encoding":"gzip, deflate, br, zstd",
-        "accept-language":"zh-CN,zh;q=0.9",
+        "accept-encoding": "gzip, deflate, br, zstd",
+        "accept-language": "zh-CN,zh;q=0.9",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36",
         "authorization": f"Bearer {token}"
     }
-    data = {
-         "taskID":"1004"
-     }
-    res = requests.post(url=url,headers=headers,json=data)
-    print(res.json())
+    fresh_res = requests.post(url=fresh_url,headers=headers,json=data).json()
+
+    print(fresh_res)
+
+    if fresh_res == 2 or 3:
+        url = "https://legends.saharalabs.ai/api/v1/task/claim"
+
+        res = requests.post(url=url,headers=headers,json=data)
+        print(res.json())
 
 
 if __name__ == '__main__':
-    # transfer_test()
-    claim()
+    transfer_test()
+    # claim()
