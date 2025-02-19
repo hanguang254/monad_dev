@@ -8,18 +8,6 @@ from rpc_account import RpcConnect
 
 
 
-
-
-def read_keys():
-    # 获取当前脚本所在的目录
-    current_dir = os.path.dirname(os.path.abspath(__file__))
-    # 构建 CSV 文件的完整路径
-    csv_path = os.path.join(current_dir, 'key.csv')
-    # 读取 CSV 文件，跳过标题行，获取第一个密钥
-    keys = RpcConnect().read_key(csv_path, "key")
-    return keys
-
-
 def transfer_test(key):
     rpc_url = "https://testnet.saharalabs.ai"
     web3 = RpcConnect().connect_rpc(rpc_url)
@@ -98,7 +86,7 @@ def claim(key):
     # print(signed_message.signature.hex())
 
     a = web3.eth.account.recover_message(message, signature=signed_message.signature)
-    print("本地验证签名")
+    print(f"本地验证签名地址：{a}")
 
 
     login_url = "https://legends.saharalabs.ai/api/v1/login/wallet"
@@ -112,8 +100,6 @@ def claim(key):
     }
     # print(login_data)
     login_res = requests.post(url=login_url,headers=login_headers,json=login_data)
-
-    print("刷新任务")
 
 
     token = login_res.json()['accessToken']
@@ -132,7 +118,7 @@ def claim(key):
     }
     fresh_res = requests.post(url=fresh_url,headers=headers,json=data).json()
 
-    print(fresh_res)
+    print("刷新任务",fresh_res)
 
     if int(fresh_res) == 2 or int(fresh_res) == 3:
         sleep(2)
@@ -147,9 +133,9 @@ def claim(key):
 
 
 def main():
-    keys = read_keys()
+    keys = RpcConnect().read_keys()
     for i in keys:
-        # transfer_test(i)
+        transfer_test(i)
         claim(i)
 
 

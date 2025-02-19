@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 from eth_account import Account
 
 
-class RpcConnect():
+class RpcConnect:
 
     def connect_rpc(self,url):
         try:
@@ -43,7 +43,7 @@ class RpcConnect():
         except Exception as e:
             print(e)
 
-    def read_key(self,csv_path,column_name):
+    def read_csv(self,csv_path,column_name):
         keys = []
         # 打开 CSV 文件
         with open(csv_path, 'r', newline='', encoding='utf-8') as file:
@@ -58,10 +58,18 @@ class RpcConnect():
                     print(f"警告: 找到一个空值或缺失的 'key' 数据：{row}")
         return keys
 
+    def read_keys(self):
+        # 获取当前脚本所在的目录
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        # 构建 CSV 文件的完整路径
+        csv_path = os.path.join(current_dir, 'key.csv')
+        # 读取 CSV 文件，跳过标题行，获取第一个密钥
+        keys = RpcConnect().read_csv(csv_path, "key")
+        return keys
+
 
 if __name__ == '__main__':
     load_dotenv()
     key = os.getenv("KEY")
     print("私钥：",key)
-    pass
     RpcConnect().create_account()
