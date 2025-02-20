@@ -127,15 +127,22 @@ def claim(key):
         res = requests.post(url=url,headers=headers,json=data)
         if res.status_code == 200:
             print(f"领取碎片：{res.json()[0]["amount"]}成功",res.json())
-
+        else:
+            print(f"请求code{res.status_code}",res)
     else:
         print("已领取")
 
 
 def main():
     keys = RpcConnect().read_keys()
+    # 先进行所有转账操作
     for i in keys:
+        print("---------------------------------------分割线---------------------------------------")
         transfer_test(i)
+
+    # 转账完成后，再进行所有的 claim 操作
+    for i in keys:
+        print("---------------------------------------分割线---------------------------------------")
         claim(i)
 
 
