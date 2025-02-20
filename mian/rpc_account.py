@@ -57,13 +57,13 @@ class RpcConnect:
                     print(f"警告: 找到一个空值或缺失的 'key' 数据：{row}")
         return keys
 
-    def read_keys(self):
+    def read_keys(self,dataname,rows):
         # 获取当前脚本所在的目录
         current_dir = os.path.dirname(os.path.abspath(__file__))
         # 构建 CSV 文件的完整路径
-        csv_path = os.path.join(current_dir, 'key.csv')
+        csv_path = os.path.join(current_dir,"..","data", dataname)
         # 读取 CSV 文件，跳过标题行，获取第一个密钥
-        keys = RpcConnect().read_csv(csv_path, "key")
+        keys = RpcConnect().read_csv(csv_path, rows)
         return keys
 
 

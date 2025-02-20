@@ -4,5 +4,6 @@
 
 # .gitignore
 .env
-key.csv
+data/key.csv
 mnemonics.csv
+data/riz_key.csv
