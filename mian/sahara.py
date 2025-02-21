@@ -152,3 +152,11 @@ if __name__ == '__main__':
     # print("私钥：", key)
     # claim(key)
     main()
+
+    # keys = RpcConnect().read_keys("key.csv", "key")
+    # rpc_url = "https://testnet.saharalabs.ai"
+    # web3 = RpcConnect().connect_rpc(rpc_url)
+    # for i in keys:
+    #
+    #     account = RpcConnect().account(web3, key=i)
+    #     print(account.address)
