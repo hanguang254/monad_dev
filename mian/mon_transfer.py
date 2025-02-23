@@ -181,16 +181,16 @@ abi = [
 ]
 
 
-def deposit():
-    amount_in_ether = 0.1  # 转账金额（单位：ETH）
-    amount_in_wei = web3.to_wei(amount_in_ether, 'ether')
+def deposit(amount):
+    # amount_in_ether = 49  # 转账金额（单位：ETH）
+    amount_in_wei = web3.to_wei(amount, 'ether')
 
     # 获取当前的 gas price
     gas_price = web3.eth.gas_price
     transaction = {
         'to': "0xeaF3c3489167B5bC73154Ae95b762Dc609d815Fe",
         'value': amount_in_wei,
-        'gas': 40000,  # 设置 gas 限额（可以根据实际情况调整）
+        'gas': 80000,  # 设置 gas 限额（可以根据实际情况调整）
         'gasPrice': gas_price,
         'nonce': web3.eth.get_transaction_count(account.address),  # 获取当前账户的 nonce
         'chainId': 10143  # 1 为主网，若是测试网，需要调整
@@ -213,11 +213,11 @@ def deposit():
         print(tx_receipt)
 
 
-def transfer(address,amount):
+def transfer(address,amount,gaslimit):
     token_contract = web3.eth.contract(address="0xeaF3c3489167B5bC73154Ae95b762Dc609d815Fe",abi=abi)
     tranfer_transaction = token_contract.functions.transfer(address,amount).build_transaction({
         'from': account.address,
-        'gas': 40000,  # 可以根据实际情况调整
+        'gas': gaslimit,  # 可以根据实际情况调整
         'gasPrice': web3.eth.gas_price,  # 获取当前 gas price
         'nonce': web3.eth.get_transaction_count(account.address),  # 获取当前账户的 nonce
         'chainId': 10143  # 1 为主网，若是测试网，需要调整
@@ -239,20 +239,27 @@ def transfer(address,amount):
 
 
 if __name__ == '__main__':
-    # 本地环境测试
-    load_dotenv()
-    key = os.getenv("KEY")
-    # print("私钥：", key)
+	# 本地环境测试
+	load_dotenv()
+	key = os.getenv("KEY")
+	# print("私钥：", key)
 
-    url = "https://monad-testnet.drpc.org"
-    web3 = RpcConnect().connect_rpc(url)
-    account = RpcConnect().account(web3, key=key)
+	url = "https://testnet-rpc.monad.xyz"
+	web3 = RpcConnect().connect_rpc(url)
+	account = RpcConnect().account(web3, key=key)
+	# print("地址：", account.address)
 
-    print("地址：", account.address)
-    # 合约存款
-    deposit()
+	gaslimit = 800000
 
-    address = ["0x35f83Fd370e935d3788B944cF659F68888888888"]
-    amount = [100000000000000000]
-    # 合约多地址转账
-    transfer(address,amount)
+	# 合约存款
+	# deposit(22)
+
+	address_list = RpcConnect().read_csv("../data/address.csv","address")
+
+	# print(address_list)
+	# 根据 address_list 的长度生成对应的 amount 数组
+	amount_in_wei = web3.to_wei(1, 'ether')
+	amount = [amount_in_wei] * len(address_list)
+	print(amount)
+	# 分发方法
+	# transfer(address_list,amount,gaslimit)
