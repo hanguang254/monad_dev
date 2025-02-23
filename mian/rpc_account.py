@@ -2,7 +2,6 @@ import csv
 from web3 import Web3
 import os
 from dotenv import load_dotenv
-from eth_account import Account
 
 
 class RpcConnect:
@@ -24,10 +23,24 @@ class RpcConnect:
         except Exception as e:
             print("错误提示:",e)
 
-    def create_account(self):
-        w3 = Web3(Web3.HTTPProvider('https://eth.llamarpc.com'))
-        acc = w3.eth.account.create()
-        print(f'private key={w3.to_hex(acc.key)}, account={acc.address}')
+    def create_account(self,web3,num_accounts):
+        private_keys = []
+        addresses = []
+
+        # 批量创建账户
+        for _ in range(num_accounts):
+            acc = web3.eth.account.create()
+            private_keys.append(web3.to_hex(acc.key))
+            addresses.append(acc.address)
+
+        # 打印所有的私钥和地址
+        print("Private Keys:")
+        for key in private_keys:
+            print(key)
+
+        print("\nAddresses:")
+        for address in addresses:
+            print(address)
 
     def account(self,web3,key):
         """
@@ -70,5 +83,8 @@ class RpcConnect:
 if __name__ == '__main__':
     load_dotenv()
     key = os.getenv("KEY")
-    print("私钥：",key)
-    RpcConnect().create_account()
+    # print("私钥：",key)
+
+    url = "https://testnet-rpc.monad.xyz"
+    web3 = RpcConnect().connect_rpc(url)
+    RpcConnect().create_account(web3,20)

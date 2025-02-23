@@ -249,10 +249,10 @@ if __name__ == '__main__':
 	account = RpcConnect().account(web3, key=key)
 	# print("地址：", account.address)
 
-	gaslimit = 800000
+	gaslimit = 790000
 
 	# 合约存款
-	# deposit(22)
+	deposit(20)
 
 	address_list = RpcConnect().read_csv("../data/address.csv","address")
 
@@ -262,4 +262,4 @@ if __name__ == '__main__':
 	amount = [amount_in_wei] * len(address_list)
 	print(amount)
 	# 分发方法
-	# transfer(address_list,amount,gaslimit)
+	transfer(address_list,amount,gaslimit)

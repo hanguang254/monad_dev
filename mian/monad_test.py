@@ -23,7 +23,8 @@ def verse_mint(key):
     url = "https://testnet-rpc.monad.xyz"
     web3 = RpcConnect().connect_rpc(url)
     account = RpcConnect().account(web3, key=key)
-    print(account.address,web3.eth.get_balance(account.address))
+    balance = web3.eth.get_balance(account.address)
+    print(account.address,f"余额{web3.from_wei(balance,'ether')}")
     contract = web3.eth.contract(address=contract_address, abi=abi)
 
     transaction = contract.functions.mint().build_transaction({
