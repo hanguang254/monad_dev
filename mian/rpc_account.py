@@ -79,6 +79,11 @@ class RpcConnect:
         keys = RpcConnect().read_csv(csv_path, rows)
         return keys
 
+    def get_balance(self,web3,key):
+        account = RpcConnect().account(web3, key=key)
+        balance = web3.eth.get_balance(account.address)
+        print(account.address, f"余额{web3.from_wei(balance, 'ether')}")
+        return web3.from_wei(balance, 'ether')
 
 if __name__ == '__main__':
     load_dotenv()
@@ -87,4 +92,7 @@ if __name__ == '__main__':
 
     url = "https://testnet-rpc.monad.xyz"
     web3 = RpcConnect().connect_rpc(url)
-    RpcConnect().create_account(web3,20)
+    # RpcConnect().create_account(web3,20)
+    keys = RpcConnect().read_keys('../data/fat_key.csv','key')
+    for i in keys:
+        RpcConnect().get_balance(web3,i)
