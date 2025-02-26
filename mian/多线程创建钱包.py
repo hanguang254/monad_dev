@@ -64,11 +64,11 @@ def generate_wallets(prefix: str, num_wallets: int, thread_count: int, file_name
 
 if __name__ == "__main__":
     # prefix = input("请输入钱包地址需要的前缀：")
-    prefix = "0"
+    prefix = "00"
     # num_wallets = int(input("请输入需要生成的钱包数量："))
     num_wallets = 20
     # thread_count = int(input("请输入线程数量："))
-    thread_count = 20
+    thread_count = 28
 
     file_name = "wallet_info_with_prefix_multithread3.csv"  # 保存文件名
     print(f"开始生成 {num_wallets} 个以 '{prefix}' 为前缀的钱包地址，使用 {thread_count} 个线程...")
