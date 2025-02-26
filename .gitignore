@@ -6,6 +6,7 @@
 .env
 key.csv
 mnemonics.csv
-riz_key.csv
 address.csv
 fat_key.csv
+monad_key.csv
+wallet_info_with_prefix_multithread3.csv

@@ -12,7 +12,7 @@ url = "https://mainnet.base.org"
 
 web3 = RpcConnect().connect_rpc(url)
 # 读取私钥
-keys = RpcConnect().read_keys("riz_key.csv","key")
+keys = RpcConnect().read_keys("monad_key.csv","key")
 
 ABI = [
 {
