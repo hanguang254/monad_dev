@@ -1,4 +1,6 @@
 import csv
+import json
+
 from web3 import Web3
 import os
 from dotenv import load_dotenv
@@ -92,7 +94,33 @@ if __name__ == '__main__':
 
     url = "https://testnet-rpc.monad.xyz"
     web3 = RpcConnect().connect_rpc(url)
-    # RpcConnect().create_account(web3,20)
-    keys = RpcConnect().read_keys('../data/fat_key.csv','key')
-    for i in keys:
-        RpcConnect().get_balance(web3,i)
+
+    # 查询monad余额
+    # keys = RpcConnect().read_keys('../data/fat_key.csv','key')
+    # for i in keys:
+    #     RpcConnect().get_balance(web3,i)
+
+
+
+    # 生成wallets.json
+    address_list = RpcConnect().read_keys('../data/GoKiteAI_key.csv','address')
+    keys = RpcConnect().read_keys('../data/GoKiteAI_key.csv','key')
+    print(address_list)
+    print(keys)
+
+    # 创建一个字典列表
+    address_key_pairs = []
+
+    # 将地址和密钥配对并添加到列表中
+    for address, key in zip(address_list, keys):
+        address_key_pairs.append({
+            "address": address,
+            "privateKey": key
+        })
+
+    # 将字典列表写入到 JSON 文件
+    output_file = 'wallets.json'
+    with open(output_file, 'w') as json_file:
+        json.dump(address_key_pairs, json_file, indent=2)
+
+    print(f"JSON 文件已生成：{output_file}")
