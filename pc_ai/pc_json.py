@@ -241,7 +241,7 @@ def main():
             print(f"当前时间: {now.strftime('%Y-%m-%d %H:%M:%S')}")
 
             # 请求最新数据
-            res = request_data(100)
+            res = request_data(50)
             # 处理数据
             res_data = kai_data(res)
             print("--------------------------------已处理后的数据-------------------------------------------")
