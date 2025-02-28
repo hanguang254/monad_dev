@@ -1,33 +1,77 @@
 import csv
-from mnemonic import Mnemonic
+import time
+from eth_account import Account
+from concurrent.futures import ThreadPoolExecutor
 
-def generate_mnemonics(count=10, strength=128):
-    """
-    批量生成助记词
-    :param count: 生成的数量
-    :param strength: 助记词的强度（128 生成 12 词，256 生成 24 词）
-    :return: 助记词列表
-    """
-    mnemo = Mnemonic("english")
-    mnemonics = [mnemo.generate(strength=strength) for _ in range(count)]
-    return mnemonics
 
-def save_mnemonics_to_csv(mnemonics, filename="mnemonics.csv"):
+
+def create_wallet_with_prefix(prefix: str) -> tuple:
     """
-    将助记词保存到CSV文件
-    :param mnemonics: 助记词列表
-    :param filename: 保存的文件名
+    生成符合指定前缀的钱包地址（排除 '0x' 比较）
+    :param prefix: 钱包地址需要符合的前缀（不包含 '0x'）
+    :return: 地址、私钥和助记词
     """
-    with open(filename, mode='w', newline='') as file:
+    while True:
+        Account.enable_unaudited_hdwallet_features()  # 启用助记词功能
+        account, mnemonic = Account.create_with_mnemonic()  # 创建钱包和助记词
+        address = account.address[2:].lower()  # 去掉 '0x' 并转为小写
+        if address.startswith(prefix.lower()):  # 检查前缀
+            return account.address, account.key.hex(), mnemonic
+
+
+def save_wallet_to_csv(file_name: str, wallet_data: list):
+    """
+    将钱包数据保存到 CSV 文件中
+    :param file_name: CSV 文件名
+    :param wallet_data: 包含地址、私钥和助记词的列表
+    """
+    with open(file_name, "a", newline="", encoding="utf-8") as file:
         writer = csv.writer(file)
-        writer.writerow(['Index', 'Mnemonic'])  # 写入表头
-        for i, mnemonic in enumerate(mnemonics, 1):
-            writer.writerow([i, mnemonic])  # 写入每一组助记词
+        for data in wallet_data:
+            writer.writerow(data)
 
-# 生成 10 组 12 词助记词
-mnemonics_list = generate_mnemonics(2)
 
-# 将助记词保存到 CSV 文件
-save_mnemonics_to_csv(mnemonics_list)
+def generate_wallets(prefix: str, num_wallets: int, thread_count: int, file_name: str):
+    """
+    使用多线程生成符合指定前缀的钱包地址
+    :param prefix: 钱包地址的前缀
+    :param num_wallets: 需要生成的钱包数量
+    :param thread_count: 线程数
+    :param file_name: CSV 文件名
+    """
+    wallet_list = []  # 存储生成的钱包数据
+    start_time = time.time()  # 记录开始时间
 
-print("助记词已成功保存到 'mnemonics.csv' 文件中")
+    def task():
+        """单个线程的任务"""
+        address, private_key, mnemonic = create_wallet_with_prefix(prefix)
+        print(f"生成钱包：{address}")  # 实时打印生成的地址
+        return address, private_key, mnemonic
+
+    # 使用线程池生成钱包
+    with ThreadPoolExecutor(max_workers=thread_count) as executor:
+        for result in executor.map(lambda _: task(), range(num_wallets)):
+            wallet_list.append(result)
+
+    # 保存生成的钱包数据到 CSV
+    save_wallet_to_csv(file_name, wallet_list)
+
+    # 打印统计信息
+    end_time = time.time()
+    print(f"\n生成完成！总共生成 {num_wallets} 个钱包，耗时 {end_time - start_time:.2f} 秒。")
+    print(f"钱包信息已保存到文件：{file_name}")
+
+
+if __name__ == "__main__":
+    # prefix = input("请输入钱包地址需要的前缀：")
+    prefix = ""
+    # num_wallets = int(input("请输入需要生成的钱包数量："))
+    num_wallets = 1000
+    # thread_count = int(input("请输入线程数量："))
+    thread_count = 28
+
+    file_name = "wallet_info_with_prefix_multithread3.csv"  # 保存文件名
+    print(f"开始生成 {num_wallets} 个以 '{prefix}' 为前缀的钱包地址，使用 {thread_count} 个线程...")
+
+    generate_wallets(prefix, num_wallets, thread_count, file_name)
+
