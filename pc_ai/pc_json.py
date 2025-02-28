@@ -221,7 +221,7 @@ def find_first_two_zaliu(data):
     result = []
     # 检查前两个元素的最后一个类型是否都是 "杂六"
     # and data[1][-1] == "杂六"
-    if len(data) > 1 and data[0][-1] == "杂六" :
+    if len(data) > 1 and data[0][-1] == "杂六" and data[1][-1] == "杂六":
         result.append(data[0])
         result.append(data[1])
 
@@ -263,12 +263,12 @@ def main():
                     print("--------------------------------进行AI分析-------------------------------------------")
                     # 生成走势图
                     create_image()
+                    # 获取文本
+                    load_dotenv()
+                    text = os.getenv("TEXT")
                     # AI分析
-                    send_text = (f'{res_data}这是jnd28最新100期数开奖，规则（每位数的范围是0到9，杂六就是三位数字不一样，且不是顺子，和值大于13就是大小于14就是小）'
-                                 f'你也可以自己根据个位十位百位，和值绘制折线走势图来分析'
-                                 f'你要做出预测并不是根据我给你的数据来统计概率请你独立分析思考'
-                                 f'给出预测杂六与与和值是大是小还有是单数还是双数的概率百分比！最好把杂六、大和小、单和双的概率都列出来，如果你有大把握确定下期预测结果请特别列出来。并且用中文回答')
-                    AI_res = AI_Analysis(send_text)
+                    send_text = (f'{res_data}{text}')
+                    AI_res = AI_Analysis(send_text,'image.png')
                     # 发送邮件提醒
                     send_email_smtp("725204548@qq.com",AI_res,"image.png")
                 else:
@@ -277,7 +277,7 @@ def main():
             else:
                 print("最新", request_data(1)["data"])
                 # 生成走势图
-                description = create_image()
+                create_image()
                 print(
                     "--------------------------------未捕捉到数据-------------------------------------------")
             # 更新 old_res，只有在新数据符合条件时才更新
@@ -287,12 +287,12 @@ def main():
             print(e)
 
         # 计算下一次执行的时间（当前时间加1分钟）
-        next_run_time = now + timedelta(minutes=1)
+        next_run_time = datetime.now().replace(second=0, microsecond=0) + timedelta(minutes=1)
         print(f"下次执行时间: {next_run_time.strftime('%Y-%m-%d %H:%M:%S')}")
         print(f"--------------------------------第{cishu}次执行-------------------------------------------")
 
         # 计算当前时间和下次执行时间的差值（秒数）
-        time_to_wait = (next_run_time - datetime.now()).total_seconds()
+        time_to_wait = max((next_run_time - datetime.now()).total_seconds(), 0)
 
         # 等待直到下次执行时间
         time.sleep(time_to_wait)
