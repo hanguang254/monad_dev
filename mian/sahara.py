@@ -1,4 +1,5 @@
 import os
+import time
 from time import sleep
 
 import requests
@@ -74,7 +75,9 @@ def claim(key):
 
     uid_data = {
         "address": account.address,
+        "timestamp":time.time()
     }
+    print(uid_data)
     uid_res = requests.post(url=uid_url,headers=login_headers,json=uid_data)
     # print(uid_res.json())
     uid = uid_res.json()['challenge']
@@ -95,19 +98,21 @@ def claim(key):
     login_data = {
         "address":account.address,
         "sig":f"0x{signed_message.signature.hex()}",
+        "timestamp":time.time()
         # "walletName":"MetaMask",
         # "walletUUID":"87a503ae-d129-464a-8237-f05b3afe1f1b"
     }
     # print(login_data)
     login_res = requests.post(url=login_url,headers=login_headers,json=login_data)
 
-
+    print(login_res.json())
     token = login_res.json()['accessToken']
     # 刷新任务
     fresh_url = "https://legends.saharalabs.ai/api/v1/task/flush"
 
     data = {
-        "taskID": "1004"
+        "taskID": "1004",
+        "timestamp":time.time()
     }
 
     headers = {
@@ -117,18 +122,22 @@ def claim(key):
         "authorization": f"Bearer {token}"
     }
     fresh_res = requests.post(url=fresh_url,headers=headers,json=data).json()
-
     print("刷新任务",fresh_res)
+    db_data = {"taskIDs":["1004"],"timestamp":f"{time.time()}"}
+    data_betch = "https://legends.saharalabs.ai/api/v1/task/dataBatch"
 
-    if int(fresh_res) == 2 or int(fresh_res) == 3:
-        sleep(2)
+    db_res = requests.post(url=data_betch,headers=headers,json=db_data).json()
+    print(f"任务状态：{db_res}")
+
+    if int(fresh_res) == 2 and int(fresh_res) == 3:
+        # sleep(2)
         url = "https://legends.saharalabs.ai/api/v1/task/claim"
 
         res = requests.post(url=url,headers=headers,json=data)
         if res.status_code == 200:
             print(f"领取碎片：{res.json()[0]["amount"]}成功",res.json())
         else:
-            print(f"请求code{res.status_code}",res)
+            print(f"请求code{res.status_code}",res.json())
     else:
         print("已领取")
 
@@ -136,9 +145,9 @@ def claim(key):
 def main():
     keys = RpcConnect().read_keys("key.csv","key")
     # 先进行所有转账操作
-    for i in keys:
-        print("---------------------------------------分割线---------------------------------------")
-        transfer_test(i)
+    # for i in keys:
+    #     print("---------------------------------------分割线---------------------------------------")
+    #     transfer_test(i)
 
     # 转账完成后，再进行所有的 claim 操作
     for i in keys:

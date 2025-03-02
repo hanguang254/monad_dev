@@ -115,7 +115,7 @@ def image_data():
     return Issue, Units, Tens, Hundreds, Sums
 
 
-def send_email_smtp(email, content, attachment_path):
+def send_email_smtp(email, attachment_path, *content):
     load_dotenv()
     account = os.getenv("ACCOUNT")
     password = os.getenv("PASSWORD")
@@ -128,8 +128,10 @@ def send_email_smtp(email, content, attachment_path):
     message = MIMEMultipart()
     message["From"] = sender_email
     message["To"] = receiver_email
-    message["Subject"] = "监控警报"
-
+    if content:
+        message["Subject"] = "监控警报"
+    else:
+        message["Subject"] = "最新数据"
     # 邮件正文
     body = f"{content}"
     message.attach(MIMEText(body, "plain"))
@@ -268,9 +270,9 @@ def main():
                     text = os.getenv("TEXT")
                     # AI分析
                     send_text = (f'{res_data}{text}')
-                    AI_res = AI_Analysis(send_text,'image.png')
+                    # AI_res = AI_Analysis(send_text,'image.png')
                     # 发送邮件提醒
-                    send_email_smtp("725204548@qq.com",AI_res,"image.png")
+                    send_email_smtp("725204548@qq.com","image.png")
                 else:
                     print(
                         "--------------------------------新老数据一样不符合分析条件-------------------------------------------")
@@ -278,6 +280,8 @@ def main():
                 print("最新", request_data(1)["data"])
                 # 生成走势图
                 create_image()
+                # 发送邮件提醒
+                send_email_smtp("725204548@qq.com", "image.png")
                 print(
                     "--------------------------------未捕捉到数据-------------------------------------------")
             # 更新 old_res，只有在新数据符合条件时才更新
