@@ -77,9 +77,9 @@ def claim(key):
         "address": account.address,
         "timestamp":time.time()
     }
-    print(uid_data)
+    # print(uid_data)
     uid_res = requests.post(url=uid_url,headers=login_headers,json=uid_data)
-    # print(uid_res.json())
+    # print(uid_res)
     uid = uid_res.json()['challenge']
     # 消息签名
     msg = (f"Sign in to Sahara!\nChallenge:{uid}")
@@ -129,7 +129,7 @@ def claim(key):
     db_res = requests.post(url=data_betch,headers=headers,json=db_data).json()
     print(f"任务状态：{db_res}")
 
-    if int(fresh_res) == 2 and int(fresh_res) == 3:
+    if int(fresh_res) == 2 or int(fresh_res) == 3:
         # sleep(2)
         url = "https://legends.saharalabs.ai/api/v1/task/claim"
 

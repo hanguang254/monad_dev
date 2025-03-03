@@ -238,6 +238,30 @@ def transfer(address,amount,gaslimit):
         print(tx_receipt)
 
 
+def withdraw(key):
+	token_contract = web3.eth.contract(address="0xeaF3c3489167B5bC73154Ae95b762Dc609d815Fe", abi=abi)
+	balance = token_contract.functions.balanceOf().call()
+	print(balance)
+	withdraw_transaction = token_contract.functions.withdraw(balance).build_transaction({
+        'from': account.address,
+        'gas': gaslimit,  # 可以根据实际情况调整
+        'gasPrice': web3.eth.gas_price,  # 获取当前 gas price
+        'nonce': web3.eth.get_transaction_count(account.address),  # 获取当前账户的 nonce
+        'chainId': 10143  # 1 为主网，若是测试网，需要调整
+    })
+	# 签名交易
+	signed_transaction = web3.eth.account.sign_transaction(withdraw_transaction, key)
+
+	# 发送交易
+	tx_hash = web3.eth.send_raw_transaction(signed_transaction.raw_transaction)
+	# 输出交易哈希
+	print(f"交易发送成功，交易哈希: {web3.to_hex(tx_hash)}")
+	tx_receipt = web3.eth.wait_for_transaction_receipt(tx_hash)
+	if tx_receipt["status"] == 1:
+		print("提款成功")
+	else:
+		print(tx_receipt)
+
 if __name__ == '__main__':
 	# 本地环境测试
 	load_dotenv()
@@ -263,3 +287,6 @@ if __name__ == '__main__':
 	print(amount)
 	# 分发方法
 	transfer(address_list,amount,gaslimit)
+
+	#提款
+	# withdraw(key)
