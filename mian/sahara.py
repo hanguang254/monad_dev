@@ -105,7 +105,7 @@ def claim(key):
     # print(login_data)
     login_res = requests.post(url=login_url,headers=login_headers,json=login_data)
 
-    print(login_res.json())
+    # print(login_res.json())
     token = login_res.json()['accessToken']
     # 刷新任务
     fresh_url = "https://legends.saharalabs.ai/api/v1/task/flush"
@@ -127,10 +127,10 @@ def claim(key):
     data_betch = "https://legends.saharalabs.ai/api/v1/task/dataBatch"
 
     db_res = requests.post(url=data_betch,headers=headers,json=db_data).json()
-    print(f"任务状态：{db_res}")
+    # print(f"任务状态：{db_res}")
 
     if int(fresh_res) == 2 or int(fresh_res) == 3:
-        # sleep(2)
+        sleep(2)
         url = "https://legends.saharalabs.ai/api/v1/task/claim"
 
         res = requests.post(url=url,headers=headers,json=data)
@@ -145,9 +145,9 @@ def claim(key):
 def main():
     keys = RpcConnect().read_keys("key.csv","key")
     # 先进行所有转账操作
-    # for i in keys:
-    #     print("---------------------------------------分割线---------------------------------------")
-    #     transfer_test(i)
+    for i in keys:
+        print("---------------------------------------分割线---------------------------------------")
+        transfer_test(i)
 
     # 转账完成后，再进行所有的 claim 操作
     for i in keys:
