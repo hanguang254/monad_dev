@@ -14,7 +14,8 @@ def transfer_test(key):
     web3 = RpcConnect().connect_rpc(rpc_url)
     # 设置转账金额（单位：ETH），并将其转换为 wei（1 ETH = 10^18 wei）
     amount_in_ether = 0.001  # 转账金额（单位：ETH）
-    amount_in_wei = web3.to_wei(amount_in_ether, 'ether')
+    amount_in_wei = int(float(amount_in_ether) * (10 ** 18))
+
 
     # 获取当前的 gas price
     gas_price = web3.eth.gas_price
@@ -31,7 +32,7 @@ def transfer_test(key):
         'to': account.address,
         'value': amount_in_wei,
         'gas': 25000,  # 设置 gas 限额（可以根据实际情况调整）
-        'gasPrice': gas_price,
+        'gasPrice': web3.to_wei(10,"gwei"),
         'nonce': web3.eth.get_transaction_count(account.address),  # 获取当前账户的 nonce
         'chainId': 313313  # 1 为主网，若是测试网，需要调整
     }
