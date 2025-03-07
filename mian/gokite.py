@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 from eth_account.messages import encode_defunct
 from concurrent.futures import ThreadPoolExecutor
 from mian.rpc_account import RpcConnect
-
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 # 读取代理池
 def load_proxies():
@@ -41,7 +41,7 @@ def find_value(data, target_key):
     return None
 
 
-def get_score(key):
+def get_score(index, key):
     """查询单个账户积分"""
     account = RpcConnect().account(web3, key=key)
     timestamp = int(time.time())
@@ -55,7 +55,7 @@ def get_score(key):
     try:
         message_res = requests.post(message_url, json=message_data, proxies=proxy, timeout=10).json()
     except requests.RequestException as e:
-        print(f"[{account.address}] ❌ 代理 {proxy} 连接失败: {e}")
+        print(f"[{index}] [{account.address}] ❌ 代理 {proxy} 连接失败: {e}")
         return
 
     msg = message_res["payload"]
@@ -76,13 +76,13 @@ def get_score(key):
     try:
         sign_res = requests.post(url=sign_url, json=sign_data, proxies=proxy, timeout=10).json()
     except requests.RequestException as e:
-        print(f"[{account.address}] ❌ 代理 {proxy} 连接失败: {e}")
+        print(f"[{index}] [{account.address}] ❌ 代理 {proxy} 连接失败: {e}")
         return
 
     # 获取 token
     token = find_value(sign_res, "token")
     if not token:
-        print(f"[{account.address}] ❌ 获取 token 失败！")
+        print(f"[{index}] [{account.address}] ❌ 获取 token 失败！")
         return
 
     # 请求用户数据
@@ -96,16 +96,15 @@ def get_score(key):
     try:
         user_res = requests.get(url, headers=headers, proxies=proxy, timeout=10).json()
     except requests.RequestException as e:
-        print(f"[{account.address}] ❌ 代理 {proxy} 连接失败: {e}")
+        print(f"[{index}] [{account.address}] ❌ 代理 {proxy} 连接失败: {e}")
         return
 
     # 获取积分
     score = find_value(user_res, "userXp")
     if score is not None:
-        print(f"[{account.address}] ✅ 积分：{score}")
+        print(f"[{index}] [{account.address}] ✅ 积分：{score}")
     else:
-        print(f"[{account.address}] ❌ 获取积分失败！")
-
+        print(f"[{index}] [{account.address}] ❌ 获取积分失败！")
 
 def main():
     """多线程执行 get_score"""
@@ -117,10 +116,18 @@ def main():
     web3 = RpcConnect().connect_rpc(rpc_url)
 
     # 使用线程池加速查询
-    # 线程数
-    workers = 2
+    workers = 2  # 线程数
+    # with ThreadPoolExecutor(max_workers=workers) as executor:
+    #     executor.map(get_score, *zip(*enumerate(keys)))  # 传入 (index, key)
+    futures = {}
+
     with ThreadPoolExecutor(max_workers=workers) as executor:
-        executor.map(get_score, keys)
+        for index, key in enumerate(keys):
+            future = executor.submit(get_score, index, key)  # 提交任务
+            futures[future] = index  # 记录每个 future 对应的 index
+
+        for future in as_completed(futures):  # 按完成顺序等待结果
+            future.result()  # 确保异常抛出，或者可在这里处理结果
 
 
 if __name__ == '__main__':
