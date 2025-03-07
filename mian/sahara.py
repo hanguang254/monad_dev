@@ -1,5 +1,6 @@
 import os
 import time
+from concurrent.futures import ThreadPoolExecutor
 from time import sleep
 
 import requests
@@ -9,11 +10,11 @@ from rpc_account import RpcConnect
 
 
 
-def transfer_test(key):
+def transfer_test(index,key,amount):
 
     # 设置转账金额（单位：ETH），并将其转换为 wei（1 ETH = 10^18 wei）
-    amount_in_ether = 0.001  # 转账金额（单位：ETH）
-    amount_in_wei = int(float(amount_in_ether) * (10 ** 18))
+    # amount_in_ether = 0.001  # 转账金额（单位：ETH）
+    amount_in_wei = int(float(amount) * (10 ** 18))
 
 
     # 获取当前的 gas price
@@ -26,7 +27,7 @@ def transfer_test(key):
 
     # print(keys)
     account = RpcConnect().account(web3,key=key)
-    print("地址：",account.address)
+    # print("地址：",account.address)
     transaction = {
         'to': account.address,
         'value': amount_in_wei,
@@ -42,15 +43,15 @@ def transfer_test(key):
     # 发送已签名的交易
     tx_hash = web3.eth.send_raw_transaction(signed_transaction.raw_transaction)
     # 输出交易哈希
-    print(f"交易已发送，交易哈希: {tx_hash.hex()}")
+    # print(f"交易已发送，交易哈希: {tx_hash.hex()}")
 
     # 监听交易确认
-    print("等待交易确认...")
+    # print("等待交易确认...")
     tx_receipt = web3.eth.wait_for_transaction_receipt(tx_hash)
     if tx_receipt["status"] == 1:
-        print("发送交易成功")
+        print(f"[{index}][{account.address}]|✅|转账成功|hash:{tx_hash.hex()}")
     else:
-        print(tx_receipt)
+        print(f"[{index}][{account.address}]|❌|交易失败 :{tx_receipt}")
 
 
 def claim(key):
@@ -80,13 +81,13 @@ def claim(key):
     uid = uid_res.json()['challenge']
     # 消息签名
     msg = (f"Sign in to Sahara!\nChallenge:{uid}")
-    print("消息签名")
+    # print("消息签名")
     message = encode_defunct(text=msg)
     signed_message = web3.eth.account.sign_message(message, private_key=key)
     # print(signed_message.signature.hex())
 
     a = web3.eth.account.recover_message(message, signature=signed_message.signature)
-    print(f"本地验证签名地址：{a}")
+    # print(f"本地验证签名地址：{a}")
 
 
     login_url = "https://legends.saharalabs.ai/api/v1/login/wallet"
@@ -119,7 +120,7 @@ def claim(key):
         "authorization": f"Bearer {token}"
     }
     fresh_res = requests.post(url=fresh_url,headers=headers,json=data).json()
-    print("刷新任务",fresh_res)
+    # print("刷新任务",fresh_res)
     db_data = {"taskIDs":["1004"],"timestamp":f"{time.time()}"}
     data_betch = "https://legends.saharalabs.ai/api/v1/task/dataBatch"
 
@@ -132,42 +133,41 @@ def claim(key):
 
         res = requests.post(url=url,headers=headers,json=data)
         if res.status_code == 200:
-            print(f"领取碎片：{res.json()[0]["amount"]}成功",res.json())
+            print(f"[{account.address}]|✅|领取碎片[{res.json()[0]["amount"]}]成功")
         else:
-            print(f"请求code{res.status_code}",res.json())
+            print(f"[{account.address}]|❌|领取失败 :{res.json()}")
     else:
-        print("已领取")
+        print(f"[{account.address}]|✅|已领取")
 
 
 def main():
+
     keys = RpcConnect().read_keys("key.csv","key")
-    # 先进行所有转账操作
-    for i in keys:
-        print("---------------------------------------分割线---------------------------------------")
-        transfer_test(i)
 
-    # 转账完成后，再进行所有的 claim 操作
-    for i in keys:
-        print("---------------------------------------分割线---------------------------------------")
-        claim(i)
+    rpc_url = "https://testnet.saharalabs.ai"
+    global web3
+    web3 = RpcConnect().connect_rpc(rpc_url)
 
+    if web3.is_connected():
+        # 使用线程池加速查询
+        workers = 3 # 线程数
+        amount = 0.001 #转账金额
+        with ThreadPoolExecutor(max_workers=workers) as executor:
+            # 提交 transfer_test 任务，并保存 Future 对象
+            futures = [executor.submit(transfer_test, index, key,amount) for index, key in enumerate(keys)]
+
+            # 等待所有 transfer_test 任务执行完毕
+            for future in futures:
+                future.result()  # 这里会阻塞，直到所有任务完成
+
+            print("✅ 所有 transfer_test 任务完成，开始 claim 任务")
+
+            # 线程池执行 claim
+            executor.map(claim, keys)
 
 if __name__ == '__main__':
     # load_dotenv()
     # key = os.getenv("KEY")
     # print("私钥：", key)
     # claim(key)
-
-    rpc_url = "https://testnet.saharalabs.ai"
-    global web3
-    web3 = RpcConnect().connect_rpc(rpc_url)
-
     main()
-
-    # keys = RpcConnect().read_keys("GoKiteAI_key.csv", "key")
-    # rpc_url = "https://testnet.saharalabs.ai"
-    # web3 = RpcConnect().connect_rpc(rpc_url)
-    # for i in keys:
-    #
-    #     account = RpcConnect().account(web3, key=i)
-    #     print(account.address)
