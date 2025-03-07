@@ -118,7 +118,7 @@ def main():
 
     # 使用线程池加速查询
     # 线程数
-    workers = 1
+    workers = 2
     with ThreadPoolExecutor(max_workers=workers) as executor:
         executor.map(get_score, keys)
 
