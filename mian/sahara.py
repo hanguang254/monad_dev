@@ -144,7 +144,7 @@ def claim(key):
 
 
 def main():
-    keys = RpcConnect().read_keys("GoKiteAI_key.csv","key")
+    keys = RpcConnect().read_keys("key.csv","key")
     # 先进行所有转账操作
     for i in keys:
         print("---------------------------------------分割线---------------------------------------")
