@@ -15,7 +15,7 @@ def transfer_test(index,key,amount):
     # 设置转账金额（单位：ETH），并将其转换为 wei（1 ETH = 10^18 wei）
     # amount_in_ether = 0.001  # 转账金额（单位：ETH）
     amount_in_wei = int(float(amount) * (10 ** 18))
-
+    print(f"[{index}]|开始执行任务")
 
     # 获取当前的 gas price
     gas_price = web3.eth.gas_price
@@ -150,7 +150,7 @@ def main():
 
     if web3.is_connected():
         # 使用线程池加速查询
-        workers = 3 # 线程数
+        workers = 5 # 线程数
         amount = 0.001 #转账金额
         with ThreadPoolExecutor(max_workers=workers) as executor:
             # 提交 transfer_test 任务，并保存 Future 对象
