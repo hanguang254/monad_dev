@@ -1,10 +1,26 @@
 import os
 import time
+import random
 import requests
 from dotenv import load_dotenv
 from eth_account.messages import encode_defunct
-from concurrent.futures import ThreadPoolExecutor  # 引入线程池
+from concurrent.futures import ThreadPoolExecutor
 from mian.rpc_account import RpcConnect
+
+
+# 读取代理池
+def load_proxies():
+    with open("../data/proxies.txt", "r") as f:
+        return [line.strip() for line in f.readlines() if line.strip()]
+
+
+# 随机选择代理
+def get_random_proxy():
+    proxies_list = load_proxies()
+    if proxies_list:
+        proxy = random.choice(proxies_list)
+        return {"http": proxy, "https": proxy}
+    return None  # 没有代理则返回 None
 
 
 def find_value(data, target_key):
@@ -30,12 +46,20 @@ def get_score(key):
     account = RpcConnect().account(web3, key=key)
     timestamp = int(time.time())
 
+    proxy = get_random_proxy()  # 选择一个随机代理
+
     # 获取签名消息
     message_url = "https://api-kiteai.bonusblock.io/api/auth/get-auth-ticket"
     message_data = {"nonce": f"timestamp_{timestamp}"}
-    message_res = requests.post(message_url, json=message_data).json()
+
+    try:
+        message_res = requests.post(message_url, json=message_data, proxies=proxy, timeout=10).json()
+    except requests.RequestException as e:
+        print(f"[{account.address}] ❌ 代理 {proxy} 连接失败: {e}")
+        return
+
     msg = message_res["payload"]
-    # print(msg)
+
     # 进行签名
     message = encode_defunct(text=msg)
     signed_message = web3.eth.account.sign_message(message, private_key=key)
@@ -48,8 +72,13 @@ def get_score(key):
         "nonce": f"timestamp_{timestamp}",
         "referralId": "optionalReferral"
     }
-    sign_res = requests.post(url=sign_url, json=sign_data).json()
-    # print(sign_res)
+
+    try:
+        sign_res = requests.post(url=sign_url, json=sign_data, proxies=proxy, timeout=10).json()
+    except requests.RequestException as e:
+        print(f"[{account.address}] ❌ 代理 {proxy} 连接失败: {e}")
+        return
+
     # 获取 token
     token = find_value(sign_res, "token")
     if not token:
@@ -63,8 +92,13 @@ def get_score(key):
         "x-auth-token": f"{token}"
     }
     url = "https://api-kiteai.bonusblock.io/api/kite-ai/get-status"
-    user_res = requests.get(url, headers=headers).json()
-    # print(user_res)
+
+    try:
+        user_res = requests.get(url, headers=headers, proxies=proxy, timeout=10).json()
+    except requests.RequestException as e:
+        print(f"[{account.address}] ❌ 代理 {proxy} 连接失败: {e}")
+        return
+
     # 获取积分
     score = find_value(user_res, "userXp")
     if score is not None:
@@ -83,7 +117,9 @@ def main():
     web3 = RpcConnect().connect_rpc(rpc_url)
 
     # 使用线程池加速查询
-    with ThreadPoolExecutor(max_workers=1) as executor:
+    # 线程数
+    workers = 1
+    with ThreadPoolExecutor(max_workers=workers) as executor:
         executor.map(get_score, keys)
 
 

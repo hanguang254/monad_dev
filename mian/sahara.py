@@ -10,8 +10,7 @@ from rpc_account import RpcConnect
 
 
 def transfer_test(key):
-    rpc_url = "https://testnet.saharalabs.ai"
-    web3 = RpcConnect().connect_rpc(rpc_url)
+
     # 设置转账金额（单位：ETH），并将其转换为 wei（1 ETH = 10^18 wei）
     amount_in_ether = 0.001  # 转账金额（单位：ETH）
     amount_in_wei = int(float(amount_in_ether) * (10 ** 18))
@@ -60,9 +59,6 @@ def claim(key):
     # load_dotenv()
     # key = os.getenv("KEY")
     # print("私钥：", key)
-
-    rpc_url = "https://testnet.saharalabs.ai"
-    web3 = RpcConnect().connect_rpc(rpc_url)
     account = RpcConnect().account(web3, key=key)
 
     # 获取签名uuid
@@ -161,6 +157,11 @@ if __name__ == '__main__':
     # key = os.getenv("KEY")
     # print("私钥：", key)
     # claim(key)
+
+    rpc_url = "https://testnet.saharalabs.ai"
+    global web3
+    web3 = RpcConnect().connect_rpc(rpc_url)
+
     main()
 
     # keys = RpcConnect().read_keys("GoKiteAI_key.csv", "key")
