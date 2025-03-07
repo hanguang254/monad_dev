@@ -144,7 +144,7 @@ def claim(key):
 
 
 def main():
-    keys = RpcConnect().read_keys("key.csv","key")
+    keys = RpcConnect().read_keys("GoKiteAI_key.csv","key")
     # 先进行所有转账操作
     for i in keys:
         print("---------------------------------------分割线---------------------------------------")
@@ -163,7 +163,7 @@ if __name__ == '__main__':
     # claim(key)
     main()
 
-    # keys = RpcConnect().read_keys("key.csv", "key")
+    # keys = RpcConnect().read_keys("GoKiteAI_key.csv", "key")
     # rpc_url = "https://testnet.saharalabs.ai"
     # web3 = RpcConnect().connect_rpc(rpc_url)
     # for i in keys:
