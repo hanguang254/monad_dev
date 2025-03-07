@@ -86,6 +86,29 @@ class RpcConnect:
         balance = web3.eth.get_balance(account.address)
         print(account.address, f"余额{web3.from_wei(balance, 'ether')}")
         return web3.from_wei(balance, 'ether')
+    # 遍历字典
+    def find_value(data, target_key):
+        '''
+        data:json返回值
+        :param target_key: 获取key
+        :return:
+        '''
+        """递归查找字典或字典列表中的目标键"""
+        if isinstance(data, dict):
+            for key, value in data.items():
+                if key == target_key:
+                    return value
+                elif isinstance(value, (dict, list)):
+                    result = RpcConnect().find_value(value, target_key)
+                    if result is not None:
+                        return result
+        elif isinstance(data, list):
+            for item in data:
+                result = RpcConnect().find_value(item, target_key)
+                if result is not None:
+                    return result
+        return None
+
 
 if __name__ == '__main__':
     load_dotenv()
