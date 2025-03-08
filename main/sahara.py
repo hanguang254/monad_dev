@@ -140,7 +140,8 @@ def claim(key):
 
             res = requests.post(url=url,headers=headers,json=data,proxies=proxy,timeout=10)
             if res.status_code == 200:
-                print(f"[{account.address}]|✅|领取碎片[{res.json()[0]["amount"]}]成功")
+                rescive = res.json()[0]["amount"]
+                print(f"[{account.address}]|✅|领取碎片[{rescive}]成功")
             else:
                 print(f"[{account.address}]|❌|领取失败 :{res.json()}")
         else:
