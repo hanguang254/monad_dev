@@ -191,7 +191,7 @@ def deposit(amount , gaslimit=1000000):
         'to': "0xf1F7B7E3b9bD45e83C06f5B18B029DF69a7c5b61",
         'value': amount_in_wei,
         'gas': gaslimit,  # 设置 gas 限额（可以根据实际情况调整）
-        'gasPrice': gas_price,
+        'gasPrice': web3.to_wei(2, 'gwei'),
         'nonce': web3.eth.get_transaction_count(account.address),  # 获取当前账户的 nonce
         'chainId': 313313  # 1 为主网，若是测试网，需要调整
     }
@@ -218,7 +218,7 @@ def transfer(address,amount, gaslimit=1000000):
     tranfer_transaction = token_contract.functions.transfer(address,amount).build_transaction({
         'from': account.address,
         'gas': gaslimit,  # 可以根据实际情况调整
-        'gasPrice': web3.eth.gas_price,  # 获取当前 gas price
+        'gasPrice': web3.to_wei(2, 'gwei'),  # 获取当前 gas price
         'nonce': web3.eth.get_transaction_count(account.address),  # 获取当前账户的 nonce
         'chainId': 313313  # 1 为主网，若是测试网，需要调整
     })
@@ -245,7 +245,7 @@ def withdraw(key,gaslimit=1000000):
     withdraw_transaction = token_contract.functions.withdraw(balance).build_transaction({
         'from': account.address,
         'gas': gaslimit,  # 可以根据实际情况调整
-        'gasPrice': web3.eth.gas_price,  # 获取当前 gas price
+        'gasPrice': web3.to_wei(2, 'gwei'),  # 获取当前 gas price
         'nonce': web3.eth.get_transaction_count(account.address),  # 获取当前账户的 nonce
         'chainId': 313313  # 1 为主网，若是测试网，需要调整
     })
@@ -270,21 +270,21 @@ if __name__ == '__main__':
 
         url = "https://testnet.saharalabs.ai"
         web3 = RpcConnect().connect_rpc(url)
-        account = RpcConnect().account(web3, key=key)
+        account = RpcConnect().account(web3,key)
         # print("地址：", account.address)
 
         # 合约存款
-        deposit(0.088,gaslimit=200000)
+        deposit(2.7,gaslimit=200000)
 
         address_list = RpcConnect().read_csv("../data/address.csv","address")
 
         # print(address_list)
         # 根据 address_list 的长度生成对应的 amount 数组
-        amount_in_wei = web3.to_wei(0.004, 'ether')
+        amount_in_wei = web3.to_wei(0.1, 'ether')
         amount = [amount_in_wei] * len(address_list)
-        print(amount)
+        # print(amount)
         # 分发方法
-        transfer(address_list,amount,gaslimit=1020000)
+        transfer(address_list,amount,gaslimit=2000000)
 
         #提款
         # withdraw(key)

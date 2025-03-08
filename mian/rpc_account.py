@@ -8,13 +8,11 @@ from dotenv import load_dotenv
 
 class RpcConnect:
 
-    def connect_rpc(self,url):
+    def connect_rpc(self,url, proxy=None):
         try:
-            # # 读取rpc变量
-            # load_dotenv()
-            # rpc = os.getenv("RPC")
-            # 链接rpc
-            w3 = Web3(Web3.HTTPProvider(url))
+            # 处理代理
+            request_kwargs = {"proxies": proxy} if proxy else {}
+            w3 = Web3(Web3.HTTPProvider(url, request_kwargs=request_kwargs))
             res = w3.is_connected()
             if res:
                 print("链接rpc成功")
@@ -115,36 +113,39 @@ if __name__ == '__main__':
     key = os.getenv("KEY")
     # print("私钥：",key)
 
-    url = "https://testnet-rpc.monad.xyz"
+    url = "https://testnet.saharalabs.ai"
     global web3
     web3 = RpcConnect().connect_rpc(url)
 
     # 查询monad余额
-    # keys = RpcConnect().read_keys('../data/fat_key.csv','key')
-    # for i in keys:
-    #     RpcConnect().get_balance(web3,i)
+    keys = RpcConnect().read_keys('../data/key.csv','key')
+    for i in keys:
+        account = RpcConnect().account(web3,i)
+        balance = web3.eth.get_balance(account.address)
+        # print(account.address)
+        print(f"{account.address}余额：{web3.from_wei(balance,"ether")}")
 
 
 
-    # 生成wallets.json
-    address_list = RpcConnect().read_keys('../data/GoKiteAI_key.csv','address')
-    keys = RpcConnect().read_keys('../data/GoKiteAI_key.csv','key')
-    print(address_list)
-    print(keys)
-
-    # 创建一个字典列表
-    address_key_pairs = []
-
-    # 将地址和密钥配对并添加到列表中
-    for address, key in zip(address_list, keys):
-        address_key_pairs.append({
-            "address": address,
-            "privateKey": key
-        })
-
-    # 将字典列表写入到 JSON 文件
-    output_file = 'wallets.json'
-    with open(output_file, 'w') as json_file:
-        json.dump(address_key_pairs, json_file, indent=2)
-
-    print(f"JSON 文件已生成：{output_file}")
+    # # 生成wallets.json
+    # address_list = RpcConnect().read_keys('../data/GoKiteAI_key.csv','address')
+    # keys = RpcConnect().read_keys('../data/GoKiteAI_key.csv','key')
+    # print(address_list)
+    # print(keys)
+    #
+    # # 创建一个字典列表
+    # address_key_pairs = []
+    #
+    # # 将地址和密钥配对并添加到列表中
+    # for address, key in zip(address_list, keys):
+    #     address_key_pairs.append({
+    #         "address": address,
+    #         "privateKey": key
+    #     })
+    #
+    # # 将字典列表写入到 JSON 文件
+    # output_file = 'wallets.json'
+    # with open(output_file, 'w') as json_file:
+    #     json.dump(address_key_pairs, json_file, indent=2)
+    #
+    # print(f"JSON 文件已生成：{output_file}")
