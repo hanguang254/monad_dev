@@ -201,7 +201,7 @@ def main():
 
 if __name__ == '__main__':
     # 安排任务，每天 UTC 时间 12:00 运行一次
-    schedule.every().day.at("20:11").do(main)
+    schedule.every().day.at("12:00").do(main)
 
     print("✅ 任务已安排，每天 UTC 12:00 运行")
 
