@@ -15,7 +15,7 @@ class RpcConnect:
             w3 = Web3(Web3.HTTPProvider(url, request_kwargs=request_kwargs))
             res = w3.is_connected()
             if res:
-                print("链接rpc成功")
+                print("✅ 成功连接到 RPC 服务器")
             else:
                 print("链接rpc失败")
             # print(f"链接结果：{res}")

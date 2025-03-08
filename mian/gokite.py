@@ -5,7 +5,7 @@ import requests
 from dotenv import load_dotenv
 from eth_account.messages import encode_defunct
 from concurrent.futures import ThreadPoolExecutor
-from mian.rpc_account import RpcConnect
+from main.rpc_account import RpcConnect
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 # 读取代理池

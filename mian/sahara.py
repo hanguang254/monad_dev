@@ -5,13 +5,14 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from time import sleep
 
 import requests
+import schedule
 from dotenv import load_dotenv
 from eth_account.messages import encode_defunct
 from rpc_account import RpcConnect
 from proxies import Proxies
 
 
-def transfer_test(index, key, amount, max_retries=3):
+def transfer_test(index, key, amount, max_retries=5):
     account = RpcConnect().account(web3, key=key)
     retry_count = 0  # 失败重试计数
 
@@ -156,20 +157,33 @@ def main():
     amount = 0.001  # 转账金额
 
     global web3  # 声明全局变量
-    web3 = RpcConnect().connect_rpc(rpc_url)
+    max_rpc_retries = 5  # 最大 RPC 连接重试次数
+    rpc_retry_count = 0
 
-    if web3 and web3.is_connected():
-        for i in range(0, len(keys), workers):
-            batch_keys = keys[i:i + workers]
+    while rpc_retry_count < max_rpc_retries:
+        web3 = RpcConnect().connect_rpc(rpc_url)
+        if web3 and web3.is_connected():
+            break
+        else:
+            print(f"⚠️  RPC 连接失败，重试 {rpc_retry_count + 1}/{max_rpc_retries}...")
+            rpc_retry_count += 1
+            sleep(5)
+    else:
+        print("❌ 无法连接到 RPC 服务器，退出程序")
+        return
 
-            # **执行 transfer_test 任务，失败会自动重试**
-            with ThreadPoolExecutor(max_workers=workers) as executor:
-                futures = {executor.submit(transfer_test, index + i, key, amount): index for index, key in enumerate(batch_keys)}
-                for future in as_completed(futures):
-                    future.result()  # 确保每个任务都执行完毕
+    for i in range(0, len(keys), workers):
+        batch_keys = keys[i:i + workers]
 
-            print(f"⏳ {workers} 个任务执行完毕，等待 2 秒后继续...")
-            sleep(2)
+        # **执行 transfer_test 任务，失败会自动重试**
+        with ThreadPoolExecutor(max_workers=workers) as executor:
+            futures = {executor.submit(transfer_test, index + i, key, amount): index for index, key in
+                       enumerate(batch_keys)}
+            for future in as_completed(futures):
+                future.result()  # 确保每个任务都执行完毕
+
+        print(f"⏳ {workers} 个任务执行完毕，等待 2 秒后继续...")
+        sleep(2)
 
     print("✅ 所有 transfer_test 任务完成，开始 claim 任务")
 
@@ -185,4 +199,12 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    # 安排任务，每天 UTC 时间 12:00 运行一次
+    schedule.every().day.at("20:11").do(main)
+
+    print("✅ 任务已安排，每天 UTC 12:00 运行")
+
+    while True:
+        schedule.run_pending()
+        time.sleep(60)
+    # main()
