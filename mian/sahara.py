@@ -27,12 +27,12 @@ def transfer_test(index,key,amount):
 
     # print(keys)
     account = RpcConnect().account(web3,key=key)
-    # print("地址：",account.address)
+    print(f"[{index}][{account.address}]余额：{web3.from_wei(web3.eth.get_balance(account.address),'ether')}")
     transaction = {
         'to': account.address,
         'value': amount_in_wei,
         'gas': 25000,  # 设置 gas 限额（可以根据实际情况调整）
-        'gasPrice': web3.to_wei(10,"gwei"),
+        'gasPrice': web3.to_wei(1.2,"gwei"),
         'nonce': web3.eth.get_transaction_count(account.address),  # 获取当前账户的 nonce
         'chainId': 313313  # 1 为主网，若是测试网，需要调整
     }

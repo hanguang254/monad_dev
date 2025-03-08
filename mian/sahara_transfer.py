@@ -274,17 +274,17 @@ if __name__ == '__main__':
         # print("地址：", account.address)
 
         # 合约存款
-        deposit(0.001)
+        deposit(0.088,gaslimit=200000)
 
         address_list = RpcConnect().read_csv("../data/address.csv","address")
 
         # print(address_list)
         # 根据 address_list 的长度生成对应的 amount 数组
-        amount_in_wei = web3.to_wei(1, 'ether')
+        amount_in_wei = web3.to_wei(0.004, 'ether')
         amount = [amount_in_wei] * len(address_list)
         print(amount)
         # 分发方法
-        transfer(address_list,amount)
+        transfer(address_list,amount,gaslimit=1020000)
 
         #提款
         # withdraw(key)

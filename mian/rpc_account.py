@@ -25,7 +25,7 @@ class RpcConnect:
         except Exception as e:
             print("错误提示:",e)
 
-    def create_account(self,web3,num_accounts):
+    def create_account(self,num_accounts):
         private_keys = []
         addresses = []
 
@@ -81,7 +81,7 @@ class RpcConnect:
         keys = RpcConnect().read_csv(csv_path, rows)
         return keys
 
-    def get_balance(self,web3,key):
+    def get_balance(self,key):
         account = RpcConnect().account(web3, key=key)
         balance = web3.eth.get_balance(account.address)
         print(account.address, f"余额{web3.from_wei(balance, 'ether')}")
@@ -116,6 +116,7 @@ if __name__ == '__main__':
     # print("私钥：",key)
 
     url = "https://testnet-rpc.monad.xyz"
+    global web3
     web3 = RpcConnect().connect_rpc(url)
 
     # 查询monad余额
