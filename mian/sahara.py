@@ -25,7 +25,7 @@ def transfer_test(index, key, amount, max_retries=3):
             balance = web3.eth.get_balance(account.address)
 
             if web3.from_wei(balance, 'ether') > 0.001:
-                print(f"[{index}][{account.address}] 余额：{web3.from_wei(balance, 'ether')} ETH")
+                print(f"[{index}][{account.address}] 余额：{web3.from_wei(balance, 'ether')} SAHARA")
 
                 transaction = {
                     'to': account.address,
