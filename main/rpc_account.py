@@ -123,7 +123,7 @@ if __name__ == '__main__':
         account = RpcConnect().account(web3,i)
         balance = web3.eth.get_balance(account.address)
         # print(account.address)
-        print(f"{account.address}余额：{web3.from_wei(balance,"ether")}")
+        print(f"{account.address}余额：{web3.from_wei(balance,'ether')}")
 
 
 
