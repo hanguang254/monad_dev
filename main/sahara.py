@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 import os
 import random
 import time
@@ -196,9 +197,12 @@ def main():
         futures = {executor.submit(claim, key): key for key in keys}
         for future in as_completed(futures):
             future.result()
+    print("✅ 任务执行成功！")
+    # # 获取并打印下次执行时间
+    next_run_time = schedule.next_run()
+    print(f"任务下次执行时间：{next_run_time.strftime('%Y-%m-%d %H:%M:%S')}")
 
-
-
+    
 if __name__ == '__main__':
     # 安排任务，每天 UTC 时间 12:00 运行一次
     schedule.every().day.at("12:00").do(main)
@@ -208,4 +212,3 @@ if __name__ == '__main__':
     while True:
         schedule.run_pending()
         time.sleep(60)
-    # main()
