@@ -198,8 +198,10 @@ def main():
         for future in as_completed(futures):
             future.result()
     print("✅ 任务执行成功！")
-    # # 获取并打印下次执行时间
-    next_run_time = schedule.next_run()
+    # 计算明天 12:00 的执行时间
+    tomorrow_date = (datetime.utcnow() + timedelta(days=1)).date()
+    next_run_time = datetime.combine(tomorrow_date, datetime.min.time()).replace(hour=12)
+
     print(f"任务下次执行时间：{next_run_time.strftime('%Y-%m-%d %H:%M:%S')}")
 
     
