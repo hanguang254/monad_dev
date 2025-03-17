@@ -118,7 +118,7 @@ if __name__ == '__main__':
     web3 = RpcConnect().connect_rpc(url)
 
     # 查询monad余额
-    keys = RpcConnect().read_keys('../data/key.csv','key')
+    keys = RpcConnect().read_keys('../data/monad_key.csv','key')
     for i in keys:
         account = RpcConnect().account(web3,i)
         balance = web3.eth.get_balance(account.address)
